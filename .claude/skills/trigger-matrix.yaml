@@ -1,0 +1,323 @@
+# Skills Auto-Trigger Matrix
+# Defines when skills automatically execute based on events and conditions
+
+version: "1.0"
+description: "Event-driven skill orchestration for autonomous component workflow"
+
+# Event types that can be emitted
+event_types:
+  component_extracted:
+    description: "Component sharded from prototype file"
+    emitted_by: ["/integrate", "manual_component_creation"]
+    payload: ["component_name", "source_file", "component_path", "contract_exists"]
+
+  contract_created:
+    description: "Component contract generated"
+    emitted_by: ["contract-creation-skill"]
+    payload: ["component_name", "contract_path"]
+
+  validation_started:
+    description: "Component validation initiated"
+    emitted_by: ["component-validation-skill"]
+    payload: ["component_name", "validation_level"]
+
+  validation_completed:
+    description: "Component validation finished"
+    emitted_by: ["component-validation-skill"]
+    payload: ["component_name", "validation_level", "status", "report_path"]
+
+  sandbox_test_created:
+    description: "Sandbox test file generated"
+    emitted_by: ["sandbox-testing-skill"]
+    payload: ["component_name", "sandbox_path"]
+
+  sandbox_approved:
+    description: "Operator approved sandbox test"
+    emitted_by: ["sandbox-testing-skill", "operator_approval"]
+    payload: ["component_name", "proven_path"]
+
+  component_proven:
+    description: "Component validated and proven in sandbox"
+    emitted_by: ["sandbox-testing-skill"]
+    payload: ["component_name", "proven_path"]
+
+  component_integrated:
+    description: "Component injected into main files"
+    emitted_by: ["component-integration-skill"]
+    payload: ["component_name", "injection_points"]
+
+  component_production_ready:
+    description: "Component migrated to production src/ folder"
+    emitted_by: ["production-ready-skill"]
+    payload: ["component_name", "production_path", "version"]
+
+  pass_completed:
+    description: "Execution pass finished for a story"
+    emitted_by: ["pass-orchestration-skill"]
+    payload: ["story_id", "pass_name", "completion_date"]
+
+  story_completed:
+    description: "Story fully complete (all passes done)"
+    emitted_by: ["pass-orchestration-skill"]
+    payload: ["story_id", "completion_date"]
+
+# Skill definitions with auto-trigger rules
+skills:
+  contract-creation:
+    description: "Automatically creates component contracts"
+    file: ".claude/skills/contract-creation.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "component_extracted"
+        conditions:
+          - "contract_exists == false"
+        priority: 1
+        action: "create_contract"
+
+    manual_triggers:
+      - pattern: "create contract for {component_name}"
+      - pattern: "define contract {component_name}"
+      - pattern: "{component_name} needs a contract"
+
+    outputs:
+      events: ["contract_created"]
+      files: [".system/contracts/{component_name}-contract.md"]
+      status_update: "execution-status.yaml"
+
+  component-validation:
+    description: "Automatically validates components (4 levels)"
+    file: ".claude/skills/component-validation.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "contract_created"
+        conditions: []
+        priority: 2
+        action: "validate_all_levels"
+
+      - event: "component_modified"
+        conditions:
+          - "requires_revalidation == true"
+        priority: 3
+        action: "validate_all_levels"
+
+    manual_triggers:
+      - pattern: "validate {component_name}"
+      - pattern: "check {component_name}"
+      - pattern: "run validation on {component_name}"
+
+    outputs:
+      events: ["validation_started", "validation_completed"]
+      files: [".system/components/{component_name}/validation-report.md"]
+      status_update: "execution-status.yaml"
+
+  sandbox-testing:
+    description: "Automatically creates sandbox tests and moves to proven/"
+    file: ".claude/skills/sandbox-testing.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "validation_completed"
+        conditions:
+          - "status == 'passed'"
+          - "validation_level == 4"
+        priority: 3
+        action: "create_sandbox_test"
+
+    manual_triggers:
+      - pattern: "prove {component_name}"
+      - pattern: "test {component_name} in sandbox"
+      - pattern: "sandbox {component_name}"
+
+    outputs:
+      events: ["sandbox_test_created", "component_proven"]
+      files:
+        - ".system/sandbox/{component_name}-test.html"
+        - ".system/proven/{component_name}/*"
+      status_update: "execution-status.yaml"
+
+    approval_required: false  # Fully autonomous - auto-approves if visual tests pass
+
+  component-integration:
+    description: "Automatically integrates proven components into main files"
+    file: ".claude/skills/component-integration.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "component_proven"
+        conditions: []
+        priority: 4
+        action: "inject_component"
+
+    manual_triggers:
+      - pattern: "integrate {component_name}"
+      - pattern: "inject {component_name}"
+
+    outputs:
+      events: ["component_integrated"]
+      files: ["main project files with injection markers"]
+      status_update: "execution-status.yaml"
+
+  production-ready:
+    description: "Automatically migrates integrated components to src/ production folder"
+    file: ".claude/skills/production-ready.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "component_integrated"
+        conditions: []
+        priority: 5
+        action: "migrate_to_production"
+
+    manual_triggers:
+      - pattern: "move {component_name} to production"
+      - pattern: "make {component_name} production ready"
+      - pattern: "migrate {component_name} to src"
+
+    outputs:
+      events: ["component_production_ready"]
+      files:
+        - "src/{component_name}/*"
+        - "src/{component_name}/metadata.json"
+        - "src/{component_name}/MIGRATION-REPORT.md"
+      status_update: "execution-status.yaml"
+
+  pass-orchestration:
+    description: "Manages pass transitions and completion tracking"
+    file: ".claude/skills/pass-orchestration.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "component_production_ready"
+        conditions:
+          - "all_story_components_production_ready == true"
+        priority: 6
+        action: "check_pass_completion"
+
+    manual_triggers:
+      - pattern: "check pass status"
+      - pattern: "am I ready for next pass"
+
+    outputs:
+      events: ["pass_completed", "story_completed"]
+      status_update: "execution-status.yaml"
+
+  progress-reporter:
+    description: "Updates execution-status.yaml automatically"
+    file: ".claude/skills/progress-reporter.md"
+    autonomy_level: "fully_autonomous"
+
+    auto_triggers:
+      - event: "contract_created"
+        priority: 10
+        action: "update_status"
+
+      - event: "validation_completed"
+        priority: 10
+        action: "update_status"
+
+      - event: "component_proven"
+        priority: 10
+        action: "update_status"
+
+      - event: "component_integrated"
+        priority: 10
+        action: "update_status"
+
+      - event: "component_production_ready"
+        priority: 10
+        action: "update_status"
+
+      - event: "pass_completed"
+        priority: 10
+        action: "update_status"
+
+    manual_triggers: []
+
+    outputs:
+      files: [".system/execution-status.yaml"]
+
+# Event chain workflows
+event_chains:
+  component_full_workflow:
+    description: "Complete autonomous workflow from extraction to production"
+    trigger: "component_extracted"
+
+    sequence:
+      1:
+        event: "component_extracted"
+        triggers_skill: "contract-creation"
+
+      2:
+        event: "contract_created"
+        triggers_skill: "component-validation"
+
+      3:
+        event: "validation_completed"
+        conditions: ["status == 'passed'", "validation_level == 4"]
+        triggers_skill: "sandbox-testing"
+
+      4:
+        event: "component_proven"
+        triggers_skill: "component-integration"
+
+      5:
+        event: "component_integrated"
+        triggers_skill: "production-ready"
+
+      6:
+        event: "component_production_ready"
+        triggers_skill: "pass-orchestration"
+
+    parallel_execution: true  # All components in a batch process in parallel
+
+    failure_handling:
+      validation_failed:
+        action: "halt_chain"
+        notify: "Component {component_name} failed validation at level {level}"
+        suggest: "Fix validation issues and re-run /integrate"
+
+  pass_transition:
+    description: "Autonomous pass completion and transition"
+    trigger: "all_story_components_production_ready"
+
+    sequence:
+      1:
+        event: "component_production_ready"
+        conditions: ["all_story_components_production_ready == true"]
+        triggers_skill: "pass-orchestration"
+
+      2:
+        event: "pass_completed"
+        notify: "Pass {pass_name} completed for story {story_id}"
+        suggest: "Commit to git and deploy to production" # or appropriate next command
+
+# Operator notification preferences
+notifications:
+  verbosity: "summary"  # Options: silent, summary, detailed, verbose
+
+  notify_on:
+    - "validation_failed"
+    - "component_proven"
+    - "component_production_ready"
+    - "pass_completed"
+    - "story_completed"
+
+  suppress:
+    - "contract_created"  # Too granular
+    - "validation_started"  # Too granular
+
+  format:
+    success: "✓ {message}"
+    warning: "⚠ {message}"
+    error: "✗ {message}"
+    info: "ℹ {message}"
+
+# Execution settings
+execution:
+  parallel_component_processing: true
+  max_parallel_components: 5
+  retry_on_failure: true
+  max_retries: 2
+  event_log_retention_days: 30

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component Sandbox Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .sandbox-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .sandbox-header {
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .sandbox-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .sandbox-status {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    #component-mount {
+      min-height: 400px;
+      border: 2px dashed #ddd;
+      border-radius: 4px;
+      padding: 20px;
+    }
+
+    .test-controls {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+
+    .test-log {
+      margin-top: 20px;
+      padding: 15px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .test-log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .test-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .test-log-time {
+      color: #858585;
+    }
+
+    .test-log-success {
+      color: #4ec9b0;
+    }
+
+    .test-log-error {
+      color: #f48771;
+    }
+
+    /* Component styles injected here */
+    /* INJECT:COMPONENT:CSS */
+  </style>
+</head>
+<body>
+  <div class="sandbox-container">
+    <div class="sandbox-header">
+      <div class="sandbox-title">Component Sandbox Test</div>
+      <div class="sandbox-status" id="status">Status: Initializing...</div>
+    </div>
+
+    <!-- Component renders here -->
+    <div id="component-mount"></div>
+
+    <div class="test-controls">
+      <button onclick="runTest()">Run Test</button>
+      <button onclick="clearLogs()">Clear Logs</button>
+      <button onclick="resetComponent()">Reset Component</button>
+    </div>
+
+    <div class="test-log" id="testLog"></div>
+  </div>
+
+  <!-- Component script injected here -->
+  <!-- INJECT:COMPONENT:JS -->
+
+  <script>
+    // Test harness
+    const testLog = document.getElementById('testLog');
+    const status = document.getElementById('status');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = 'test-log-entry';
+      const time = new Date().toLocaleTimeString();
+      const colorClass = type === 'success' ? 'test-log-success' : type === 'error' ? 'test-log-error' : '';
+      entry.innerHTML = `<span class="test-log-time">[${time}]</span> <span class="${colorClass}">${message}</span>`;
+      testLog.appendChild(entry);
+      testLog.scrollTop = testLog.scrollHeight;
+    }
+
+    function updateStatus(msg) {
+      status.textContent = `Status: ${msg}`;
+    }
+
+    function clearLogs() {
+      testLog.innerHTML = '';
+      log('Logs cleared', 'info');
+    }
+
+    function resetComponent() {
+      document.getElementById('component-mount').innerHTML = '';
+      log('Component reset', 'info');
+      updateStatus('Ready for test');
+    }
+
+    function runTest() {
+      try {
+        log('Starting component test...', 'info');
+        updateStatus('Running test...');
+
+        // Test logic here
+        // Replace with actual component initialization
+
+        log('✅ Component initialized', 'success');
+        log('✅ Rendering complete', 'success');
+        log('✅ Event listeners attached', 'success');
+        log('✅ All checks passed', 'success');
+
+        updateStatus('Test PASSED');
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        updateStatus('Test FAILED');
+      }
+    }
+
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      updateStatus('Ready for test');
+      log('Sandbox initialized', 'info');
+      log('Component loaded', 'info');
+    });
+  </script>
+</body>
+</html>

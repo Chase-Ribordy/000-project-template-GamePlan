@@ -1,0 +1,53 @@
+# Event Log - Complete Audit Trail of Autonomous Skills Execution
+# This file records all events emitted by commands and skills
+
+session_start: "Not yet initialized"
+project: "project-template"
+
+# Event history (populated as skills execute)
+events: []
+  # Events will be appended here as they occur
+  # Example event structure:
+  #
+  # - id: "evt-001"
+  #   timestamp: "2025-01-15T10:30:00Z"
+  #   event: "component_extracted"
+  #   payload:
+  #     component_name: "login-form"
+  #     source_file: "references/login-prototype.html"
+  #     component_path: ".system/components/login-form/"
+  #     story: "story-1-user-authentication"
+  #   emitted_by: "/integrate"
+  #   triggered_skills:
+  #     - "contract-creation"
+  #     - "progress-reporter"
+  #   status: "success"
+  #   duration_ms: null
+
+# Statistics
+total_events: 0
+events_by_type: {}
+  # Will track counts like:
+  # component_extracted: 5
+  # contract_created: 5
+  # validation_completed: 5
+  # component_proven: 4
+  # component_integrated: 4
+
+# Configuration
+config:
+  retention_days: 30
+  archive_after_days: 30
+  compress_after_days: 90
+  delete_after_days: 365
+
+# Notes
+notes: |
+  This event log will be populated when you start using the autonomous skills system.
+
+  Events are logged automatically by the progress-reporter skill.
+
+  To view events:
+  cat .system/events/event-log.yaml
+
+  Events are retained for 30 days by default, then archived.

@@ -1,0 +1,73 @@
+# Agent Assignment History
+# Tracks all agent assignment decisions made by orchestrator-exe
+# Used for learning and optimization of future assignments
+
+version: 1.0.0
+
+# Assignment history log
+assignments:
+  # Example structure:
+  # - assignment_id: assign-001
+  #   timestamp: "2025-11-15T10:30:00Z"
+  #   task:
+  #     type: component-integration
+  #     story: 1-2-user-authentication
+  #     component: login-form
+  #     complexity: medium
+  #     pass: second
+  #
+  #   selection_process:
+  #     candidates: [integration-manager, development-executor]
+  #     scores:
+  #       integration-manager: 0.92
+  #       development-executor: 0.43
+  #     selected: integration-manager
+  #     reasoning: "Task type matches specialization, autonomous mode capable"
+  #
+  #   assignment:
+  #     agent: integration-manager
+  #     terminal: terminal-1
+  #     mode: autonomous
+  #     skills_provided: [component-integration, contract-orchestrator]
+  #
+  #   outcome:
+  #     status: completed
+  #     duration_minutes: 12
+  #     success: true
+  #     escalations: 0
+  #     operator_interventions: 0
+
+# Summary statistics
+statistics:
+  total_assignments: 0
+  successful: 0
+  failed: 0
+  escalated: 0
+
+  by_agent:
+    orchestrator-exe: {assigned: 0, success: 0, failed: 0}
+    resource-allocator: {assigned: 0, success: 0, failed: 0}
+    integration-manager: {assigned: 0, success: 0, failed: 0}
+    validation-controller: {assigned: 0, success: 0, failed: 0}
+    development-executor: {assigned: 0, success: 0, failed: 0}
+    contract-architect: {assigned: 0, success: 0, failed: 0}
+    dependency-analyst: {assigned: 0, success: 0, failed: 0}
+    testing-specialist: {assigned: 0, success: 0, failed: 0}
+
+  by_task_type:
+    component-integration: {assigned: 0, success: 0}
+    component-validation: {assigned: 0, success: 0}
+    story_implementation: {assigned: 0, success: 0}
+    contract_generation: {assigned: 0, success: 0}
+    dependency_analysis: {assigned: 0, success: 0}
+
+  average_duration_minutes: 0
+  average_score: 0
+
+# Notes
+notes: |
+  - Each assignment is logged with full context for future optimization
+  - Selection scores help refine the agent-selector algorithm over time
+  - Outcome tracking enables performance metrics per agent
+  - Duration tracking helps with capacity planning
+  - This file grows over time - consider archiving after sprint completion

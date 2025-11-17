@@ -1,0 +1,27 @@
+/**
+ * Styles for [ComponentName]
+ * Namespace: .component-[name]
+ */
+
+.component-[name] {
+  /* Container styles */
+}
+
+.component-[name]__element {
+  /* BEM element styles */
+}
+
+.component-[name]__element--modifier {
+  /* BEM modifier styles */
+}
+
+.component-[name]:hover {
+  /* Interactive states */
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .component-[name] {
+    /* Mobile adjustments */
+  }
+}

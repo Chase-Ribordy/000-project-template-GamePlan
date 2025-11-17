@@ -1,0 +1,90 @@
+# Parallel Work Session Template
+# Use this template to track parallel work across multiple terminals
+# Supports both intra-story (multiple terminals per story) and inter-story parallelism
+
+# Session Type: Choose one
+# - intra_story: Multiple terminals working on different aspects of ONE story
+# - inter_story: Multiple terminals working on DIFFERENT stories simultaneously
+parallel_mode: "intra_story" # or "inter_story"
+
+# For intra_story mode: Single story with multiple terminal sessions
+story_id: "1-2-user-authentication" # Only for intra_story mode
+epic_id: "epic-1"
+created: "2025-11-15T10:00:00Z"
+
+sessions:
+  # Terminal 1 - Example: Backend Development
+  terminal-1:
+    focus: "backend" # What aspect of the story (backend, frontend, tests, etc.)
+    tasks:
+      - "Task description 1"
+      - "Task description 2"
+    status: "in_progress" # pending, in_progress, completed, blocked
+    current_file: "src/services/example.service.ts" # Current working file
+    agent: "dev" # BMAD agent being used
+    started: "2025-11-15T10:00:00Z"
+    last_update: "2025-11-15T10:30:00Z"
+    blocked_by: [] # List of terminal IDs blocking this work
+
+  # Terminal 2 - Example: Frontend Development
+  terminal-2:
+    focus: "frontend"
+    tasks:
+      - "Task description 1"
+      - "Task description 2"
+    status: "pending"
+    current_file: ""
+    agent: "dev"
+    started: ""
+    last_update: ""
+    blocked_by: ["terminal-1"] # Waiting for backend to complete
+
+  # Terminal 3 - Example: Testing
+  terminal-3:
+    focus: "tests"
+    tasks:
+      - "Task description 1"
+    status: "pending"
+    current_file: ""
+    agent: "tea"
+    started: ""
+    last_update: ""
+    blocked_by: ["terminal-1", "terminal-2"] # Waiting for implementation
+
+coordination:
+  # Define when parallel work can merge
+  merge_points:
+    - "Backend service complete → Frontend can integrate"
+    - "Frontend complete → Tests can run e2e"
+
+  # File conflicts (same file edited in multiple terminals)
+  conflicts:
+    # Example:
+    # - file: "src/shared/types.ts"
+    #   terminals: ["terminal-1", "terminal-2"]
+    #   detected: "2025-11-15T11:00:00Z"
+    #   resolution: "Terminal-1 has priority, terminal-2 will merge"
+
+  # Ready to merge flag
+  ready_to_merge: false # Set to true when all terminals ready
+
+# For inter_story mode: Multiple stories across terminals
+# (Use active-sessions.yaml for this - see dependencies-template.yaml)
+
+# Metadata
+created_by: "orchestrator-exe"
+last_sync: "2025-11-15T10:30:00Z"
+sync_frequency: "5m" # How often to sync status
+
+# Notes
+notes: |
+  Use this template to track parallel work on a single story.
+  Copy and rename to: story-{story-id}-sessions.yaml
+
+  Example: story-1-2-sessions.yaml
+
+  Orchestrator-EXE will read this file to:
+  - Display parallel work status
+  - Detect conflicts
+  - Recommend merge points
+  - Coordinate terminal work

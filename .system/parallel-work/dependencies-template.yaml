@@ -1,0 +1,210 @@
+# Story Dependencies Template
+# Use this to manage story dependency graphs for parallel work coordination
+# Helps orchestrator-exe determine which stories can run in parallel
+
+# Project Information
+project_key: "jira-1234"
+sprint_name: "Sprint 1"
+created: "2025-11-15T09:00:00Z"
+
+# Story Dependency Graph
+# Format: story_id → list of stories it depends on
+dependencies:
+  # Epic 1 Stories
+  "1-1-plant-data-model":
+    depends_on: [] # No dependencies, can start immediately
+    status: "ready"
+    parallel_safe: true
+    priority: 1
+
+  "1-2-user-authentication":
+    depends_on: [] # Independent story
+    status: "ready"
+    parallel_safe: true
+    priority: 1
+
+  "1-3-account-management":
+    depends_on: ["1-2-user-authentication"] # Needs auth service first
+    status: "blocked"
+    blocking_reason: "Requires authentication service from story 1-2"
+    parallel_safe: false # Cannot run in parallel with dependency
+    priority: 2
+
+  "1-4-role-based-access":
+    depends_on: ["1-2-user-authentication", "1-3-account-management"]
+    status: "blocked"
+    blocking_reason: "Needs auth and account management"
+    parallel_safe: false
+    priority: 3
+
+  # Epic 2 Stories
+  "2-1-personality-system":
+    depends_on: ["1-1-plant-data-model"] # Needs data model
+    status: "blocked"
+    blocking_reason: "Requires plant data model from story 1-1"
+    parallel_safe: false
+    priority: 2
+
+  "2-2-care-recommendations":
+    depends_on: ["1-1-plant-data-model", "2-1-personality-system"]
+    status: "blocked"
+    blocking_reason: "Needs data model and personality system"
+    parallel_safe: false
+    priority: 3
+
+# Parallel Work Strategies
+parallel_strategies:
+  # Strategy 1: Independent Stories in Parallel
+  strategy_1:
+    name: "Independent Stories"
+    description: "Run stories with no dependencies simultaneously"
+    stories: ["1-1-plant-data-model", "1-2-user-authentication"]
+    terminals_required: 2
+    risk: "low"
+    recommended: true
+
+  # Strategy 2: Epic-Based Parallelism
+  strategy_2:
+    name: "Epic Parallelism"
+    description: "Work on different epics in parallel"
+    example: "Epic 1 story in Terminal 1, Epic 2 story in Terminal 2"
+    stories: ["1-2-user-authentication", "2-1-personality-system"]
+    terminals_required: 2
+    risk: "medium"
+    note: "Watch for shared infrastructure dependencies"
+
+  # Strategy 3: Sequential with Testing
+  strategy_3:
+    name: "Development + Testing"
+    description: "Develop in one terminal, test in another"
+    stories: ["1-2-user-authentication"]
+    terminals_required: 2
+    configuration:
+      terminal_1: "Development (backend + frontend)"
+      terminal_2: "Testing (unit + integration)"
+    risk: "low"
+    recommended: true
+
+# Dependency Chains
+# Stories that must be completed in sequence
+dependency_chains:
+  auth_chain:
+    name: "Authentication Chain"
+    stories_in_order:
+      - "1-2-user-authentication"
+      - "1-3-account-management"
+      - "1-4-role-based-access"
+    reason: "Each builds on previous auth functionality"
+
+  plant_chain:
+    name: "Plant Data Chain"
+    stories_in_order:
+      - "1-1-plant-data-model"
+      - "2-1-personality-system"
+      - "2-2-care-recommendations"
+    reason: "Personality and recommendations need data model"
+
+# Conflict Detection Rules
+conflict_rules:
+  # Files that multiple stories might modify
+  shared_files:
+    - file: "src/shared/types.ts"
+      stories: ["1-1-plant-data-model", "1-2-user-authentication"]
+      conflict_risk: "high"
+      recommendation: "Sequential development or careful coordination"
+
+    - file: "src/database/schema.sql"
+      stories: ["1-1-plant-data-model", "2-1-personality-system"]
+      conflict_risk: "high"
+      recommendation: "Complete 1-1 before starting 2-1"
+
+  # Shared infrastructure
+  shared_infrastructure:
+    - component: "Database migrations"
+      stories: ["1-1-plant-data-model", "1-2-user-authentication"]
+      conflict_risk: "medium"
+      recommendation: "Coordinate migration order"
+
+    - component: "API routes"
+      stories: ["1-2-user-authentication", "1-3-account-management"]
+      conflict_risk: "low"
+      recommendation: "Different routes, safe to parallelize"
+
+# Active Sessions Tracking
+# Tracks which stories are currently being worked on across terminals
+active_sessions:
+  # Example session entries (populated by orchestrator-exe)
+  # terminal-1:
+  #   story_id: "1-2-user-authentication"
+  #   phase: "first-pass"
+  #   status: "in_progress"
+  #   started: "2025-11-15T10:00:00Z"
+  #   agent: "dev"
+  #
+  # terminal-2:
+  #   story_id: "1-1-plant-data-model"
+  #   phase: "first-pass"
+  #   status: "in_progress"
+  #   started: "2025-11-15T10:15:00Z"
+  #   agent: "dev"
+
+# Dependency Status Updates
+# Automatically updated as stories complete
+dependency_status:
+  completed_stories:
+    # Example: ["1-1-plant-data-model", "1-2-user-authentication"]
+
+  newly_ready:
+    # Stories that became ready after recent completions
+    # Example: ["1-3-account-management"] (after 1-2 completes)
+
+  still_blocked:
+    # Stories still waiting on dependencies
+    # Example: ["1-4-role-based-access"] (waiting for 1-2 and 1-3)
+
+# Orchestrator Recommendations
+recommendations:
+  current_phase: "first-pass"
+
+  next_actions:
+    - action: "Start parallel work on independent stories"
+      stories: ["1-1-plant-data-model", "1-2-user-authentication"]
+      terminals: 2
+      rationale: "No dependencies, safe to parallelize"
+
+    - action: "Sequential development for auth chain"
+      stories: ["1-2-user-authentication", "1-3-account-management"]
+      terminals: 1
+      rationale: "Strong dependency, better done sequentially"
+
+  risk_assessment:
+    low_risk_parallel:
+      - ["1-1-plant-data-model", "1-2-user-authentication"]
+      - ["Epic 1 stories", "Epic 2 stories (different domains)"]
+
+    high_risk_parallel:
+      - ["1-2-user-authentication", "1-3-account-management"]
+      - ["Stories sharing database schema"]
+
+# Metadata
+last_updated: "2025-11-15T10:00:00Z"
+updated_by: "orchestrator-exe"
+
+# Notes
+notes: |
+  This template defines story dependencies and parallel work strategies.
+
+  Copy and customize for your sprint:
+  1. List all stories from sprint-status.yaml
+  2. Define dependencies between stories
+  3. Identify shared files and infrastructure
+  4. Plan parallel work strategies
+
+  Orchestrator-EXE uses this to:
+  - Recommend which stories can run in parallel
+  - Detect dependency violations
+  - Suggest optimal terminal allocation
+  - Warn about potential conflicts
+
+  Update dependency_status as stories complete to automatically
+  unblock dependent stories.

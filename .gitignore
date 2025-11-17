@@ -1,0 +1,87 @@
+# Project Template - Smart Defaults
+
+# Folder Structure Notes:
+# - .system/ = Agent infrastructure (SHOULD be committed)
+# - docs/ = Project knowledge base (initially just README.md)
+# - src/ = Production-ready components (SHOULD be committed)
+# - public/ = Build output for deployment (git-ignored by default)
+# - Operator works in: docs/, references/, src/, assets/, tests/
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Test output
+coverage/
+*.test.log
+test-results/
+.nyc_output/
+
+# System folder artifacts (generated during testing/validation)
+.system/sandbox/*-test.html
+!.system/sandbox/test-template.html
+!.system/sandbox/example-button-test.html
+
+# Build intelligence (auto-generated tracking data)
+.system/build-intelligence/*.json
+!.system/build-intelligence/README.md
+
+# Proven components test reports (auto-generated)
+.system/proven/*/test-report.md
+
+# MCP server runtime
+.system/mcp-servers/*.log
+.system/mcp-servers/component-registry.json
+
+# Environment variables (if added later)
+.env
+.env.local
+.env.*.local
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+public/          # Deployable build output (bundled CSS/JS, optimized assets)
+*.tsbuildinfo
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Personal notes (user-specific)
+.claude/commands/personal/notes.md
+PERSONAL_NOTES.md
+
+# User-specific settings (machine-specific configuration)
+.claude/config/settings.local.json
+
+# Backup files created by /integrate
+references/*-backup-*.html
+references/*-backup-*.js
+references/*-backup-*.css

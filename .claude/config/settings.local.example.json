@@ -1,0 +1,27 @@
+{
+  "comment": "Copy this file to settings.local.json and customize for your machine",
+  "comment2": "settings.local.json is gitignored - it's your personal config",
+
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .system/notifications/notify.py"
+          }
+        ]
+      }
+    ]
+  },
+
+  "comment3": "Adjust 'python' to your Python executable path:",
+  "comment4": "Windows: 'C:/Python313/python.exe' or 'python'",
+  "comment5": "macOS/Linux: 'python3'",
+  "comment6": "The Stop hook plays a sound notification when Claude finishes responding",
+
+  "permissions": {
+    "comment": "Add machine-specific tool permissions here if needed",
+    "allow": []
+  }
+}

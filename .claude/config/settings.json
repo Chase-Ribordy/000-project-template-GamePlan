@@ -1,0 +1,65 @@
+{
+  "$schema": "https://code.claude.com/schemas/settings.json",
+  "description": "Project settings with pre-configured allowed tools to reduce permission prompts. Based on official Claude Code documentation format.",
+
+  "allow": [
+    "Read(*)",
+    "Grep(*)",
+    "List(*)",
+    "View(*)",
+    "Edit(*)",
+    "Write(*)",
+    "Bash(git *)",
+    "Bash(npm *)",
+    "Bash(pip *)",
+    "Bash(pip3 *)",
+    "Bash(python *)",
+    "Bash(python3 *)",
+    "Bash(node *)",
+    "Bash(ls *)",
+    "Bash(dir *)",
+    "Bash(pwd)",
+    "Bash(pwd *)",
+    "Bash(cd *)",
+    "Bash(mkdir *)",
+    "Bash(cp *)",
+    "Bash(mv *)",
+    "Bash(cat *)",
+    "Bash(grep *)",
+    "Bash(find *)",
+    "Bash(echo *)",
+    "Bash(tree *)",
+    "Bash(type *)",
+    "Bash(chmod *)",
+    "Bash(touch *)",
+    "Bash(sed *)",
+    "Bash(test *)",
+    "SlashCommand(/bmad:bmm:agents:dev)",
+    "SlashCommand(/bmad:bmm:agents:*)",
+    "SlashCommand(/bmad:bmm:workflows:*)",
+    "SlashCommand(/bmad:core:*)"
+  ],
+
+  "ask": [
+    "Bash(rm *)",
+    "Bash(rmdir *)",
+    "Bash(del *)",
+    "Bash(curl *)",
+    "Bash(wget *)",
+    "Bash(ssh *)",
+    "Bash(scp *)"
+  ],
+
+  "deny": [
+    "Bash(sudo *)",
+    "Bash(su *)"
+  ],
+
+  "env": {
+    "PYTHONPATH": "${workspaceFolder}/lib"
+  },
+
+  "sandbox": {
+    "enabled": false
+  }
+}

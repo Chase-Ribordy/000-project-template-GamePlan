@@ -1,0 +1,137 @@
+# Parallel Work Session Example
+# This example demonstrates inter-story parallelism during first-pass development
+# Scenario: 3 independent stories from Epic 1 being developed in parallel across 3 terminals
+
+session_id: "session_2025-01-15_093012"
+session_type: "inter_story"  # inter_story or intra_story
+mode: "manual"  # manual or autonomous
+phase: "first_pass"
+epic_id: "1-user-management"
+created_at: "2025-01-15T09:30:12Z"
+status: "active"  # active, paused, completed, blocked
+
+# Terminal assignments for parallel work
+terminals:
+  - terminal_id: "T1"
+    story_id: "1-1-user-authentication"
+    assigned_agent: "dev"
+    status: "active"
+    started_at: "2025-01-15T09:30:12Z"
+    current_task: "Implementing JWT token generation"
+    progress: "60%"
+    estimated_completion: "2025-01-15T11:00:00Z"
+    dependencies_waiting: []
+
+  - terminal_id: "T2"
+    story_id: "1-2-user-profile-management"
+    assigned_agent: "dev"
+    status: "active"
+    started_at: "2025-01-15T09:32:45Z"
+    current_task: "Creating profile update endpoint"
+    progress: "45%"
+    estimated_completion: "2025-01-15T11:30:00Z"
+    dependencies_waiting: []
+
+  - terminal_id: "T3"
+    story_id: "1-3-password-reset-flow"
+    assigned_agent: "dev"
+    status: "active"
+    started_at: "2025-01-15T09:35:20Z"
+    current_task: "Implementing email token generation"
+    progress: "30%"
+    estimated_completion: "2025-01-15T12:00:00Z"
+    dependencies_waiting: []
+
+# Coordination rules for this session
+coordination:
+  parallelism_strategy: "independent_stories"
+  conflict_zones:
+    - zone: "database_schema"
+      affected_terminals: ["T1", "T2"]
+      resolution: "T1 creates user table first, T2 waits for schema confirmation"
+      status: "resolved"
+
+    - zone: "shared_utilities"
+      affected_terminals: ["T1", "T3"]
+      resolution: "Both can implement independently, merge conflicts resolved later"
+      status: "monitoring"
+
+  merge_points:
+    - name: "database_schema_merge"
+      terminals: ["T1", "T2", "T3"]
+      trigger: "All stories complete schema changes"
+      estimated_time: "2025-01-15T12:30:00Z"
+
+    - name: "integration_testing"
+      terminals: ["T1", "T2", "T3"]
+      trigger: "All stories pass unit tests"
+      estimated_time: "2025-01-15T13:00:00Z"
+
+  communication_log:
+    - timestamp: "2025-01-15T09:45:00Z"
+      from: "T1"
+      to: "orchestrator"
+      message: "User table schema created with fields: id, email, password_hash, created_at"
+      action: "Broadcast to T2, T3"
+
+    - timestamp: "2025-01-15T09:47:00Z"
+      from: "orchestrator"
+      to: "T2"
+      message: "T1 completed user table. Safe to add profile_data column."
+      action: "Unblock T2 schema work"
+
+    - timestamp: "2025-01-15T10:15:00Z"
+      from: "T3"
+      to: "orchestrator"
+      message: "Need email service integration - shared with T2?"
+      action: "Check conflict with T2"
+
+# Metadata for tracking
+metadata:
+  operator: "development_team_lead"
+  sprint_id: "sprint_2025_week_3"
+  total_stories_in_batch: 3
+  completed_stories: 0
+  blocked_stories: 0
+  estimated_parallel_speedup: "3x"  # 3 stories in time of 1
+
+# Session notes
+notes:
+  - "First-pass focus: core logic only, minimal error handling"
+  - "All three stories are independent - no blocking dependencies"
+  - "Database schema coordination required at merge point"
+  - "Integration testing will validate story interactions"
+  - "Second-pass will add comprehensive error handling in parallel"
+
+# Risk tracking
+risks:
+  - risk: "Database schema conflicts between T1 and T2"
+    severity: "medium"
+    mitigation: "T1 creates base schema first, T2 extends"
+    status: "mitigated"
+
+  - risk: "Email service implementation overlap between T2 and T3"
+    severity: "low"
+    mitigation: "Monitor and merge conflicts if both implement"
+    status: "monitoring"
+
+# Performance metrics
+metrics:
+  actual_parallelism_achieved: "2.8x"  # Slightly less than perfect due to coordination
+  coordination_overhead: "15 minutes"
+  context_switches: 2
+  blocked_time_total: "12 minutes"
+
+# Next actions
+next_actions:
+  - action: "Monitor T1 completion for schema broadcast"
+    responsible: "orchestrator"
+    deadline: "2025-01-15T11:00:00Z"
+
+  - action: "Coordinate merge point when all stories reach unit testing"
+    responsible: "orchestrator"
+    deadline: "2025-01-15T13:00:00Z"
+
+  - action: "Update sprint-status.yaml with story completions"
+    responsible: "orchestrator"
+    deadline: "End of session"

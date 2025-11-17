@@ -1,0 +1,26 @@
+{
+  "name": "project-template",
+  "version": "1.0.0",
+  "description": "Quality-First Project Template with autonomous execution pipeline",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:parallel": "jest --maxWorkers=4",
+    "test:contracts": "jest tests/unit/contracts",
+    "test:mcp": "jest tests/integration/mcp",
+    "test:validation": "jest tests/integration/validation",
+    "test:architecture": "jest tests/integration/architecture",
+    "test:skills": "jest tests/integration/skills",
+    "test:smoke": "jest tests/integration/smoke",
+    "test:all": "node tests/run-parallel.js",
+    "test:all-terminals": "node tests/run-all-parallel.js",
+    "test:ci": "jest --ci --coverage --maxWorkers=2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}

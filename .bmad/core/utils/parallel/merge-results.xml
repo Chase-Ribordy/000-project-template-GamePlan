@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PARALLEL RESULTS MERGER UTILITY
+
+  Purpose: Aggregate outputs from parallel terminal agents into unified artifacts
+
+  Usage:
+    <include href="merge-results.xml" />
+    <call-template name="merge-epic-sections">
+      <with-param name="section_files" select="$result_files" />
+      <with-param name="output_file" select="'epics.md'" />
+    </call-template>
+
+  Capabilities:
+  - Merges multiple markdown sections into single document
+  - Preserves section ordering (epic-1, epic-2, epic-3...)
+  - Validates completeness (no missing sections)
+  - Handles edge cases (duplicate sections, malformed content)
+  - Generates coverage reports and summaries
+-->
+
+<merger>
+
+  <!-- MAIN TEMPLATE: Merge epic sections from parallel workers -->
+  <template name="merge-epic-sections">
+    <param name="section_files" />    <!-- List of epic-{n}-section.md files -->
+    <param name="output_file" />      <!-- Destination file (epics.md) -->
+    <param name="epic_count" />       <!-- Expected number of epics -->
+
+    <step n="1" goal="Validate section files">
+      <action>Verify all expected sections exist and are valid</action>
+      <details>
+        For each expected epic (1 to epic_count):
+
+        1. **Check file exists**:
+           - Look for epic-{n}-section.md in section_files list
+           - If missing, report error: "Missing epic-{n}-section.md"
+
+        2. **Validate content structure**:
+           - File must start with "## Epic {n}:" heading
+           - Must contain "### Epic Goal" section
+           - Must contain at least one "### Story {n}.{m}:" section
+           - Report warnings for structural issues
+
+        3. **Extract metadata**:
+           - Epic number, title, goal
+           - Story count
+           - Word count (for progress reporting)
+
+        If any critical validations fail, abort merge and report errors.
+      </details>
+    </step>
+
+    <step n="2" goal="Merge sections in order">
+      <action>Combine epic sections into unified epics.md</action>
+      <details>
+        Create or overwrite output_file:
+
+        1. **Write document header**:
+           ```markdown
+           # Epics and Stories
+
+           > Generated from parallel epic breakdown
+           > Date: {{timestamp}}
+           > Total Epics: {{epic_count}}
+           > Total Stories: {{total_story_count}}
+
+           ---
+           ```
+
+        2. **Append epic sections in numerical order**:
+           - Read epic-1-section.md, append content
+           - Read epic-2-section.md, append content
+           - Read epic-3-section.md, append content
+           - ... continue for all epics
+           - Add separator between epics: "\n---\n\n"
+
+        3. **Preserve formatting**:
+           - Maintain exact markdown structure from sections
+           - Keep heading hierarchy (##, ###, ####)
+           - Preserve code blocks, lists, tables
+
+        4. **Verify output**:
+           - Count epics in merged file
+           - Count stories in merged file
+           - Compare with expected counts
+      </details>
+    </step>
+
+    <step n="3" goal="Generate FR coverage matrix">
+      <action>Create functional requirements coverage report</action>
+      <details>
+        Scan merged epics.md for FR references:
+
+        1. **Extract FR mappings**:
+           - Find all "Functional Requirements: FR1, FR3, FR5" entries
+           - Build map: {epic_id: [FR list]}
+
+        2. **Build coverage matrix**:
+           ```markdown
+           ## FR Coverage Matrix
+
+           | FR | Epic(s) | Story Count |
+           |----|---------|-------------|
+           | FR1 | Epic 1 | 3 stories |
+           | FR2 | Epic 1, Epic 3 | 5 stories |
+           | FR3 | Epic 2 | 2 stories |
+           ```
+
+        3. **Identify gaps**:
+           - Compare to original PRD FR list
+           - Report any FRs not mapped to any epic
+           - **Critical**: Every FR must be covered
+
+        4. **Append to output_file**:
+           Add coverage matrix as final section in epics.md
+      </details>
+    </step>
+
+    <step n="4" goal="Report merge summary">
+      <action>Display completion statistics</action>
+      <details>
+        ```
+        Epic Merge Complete!
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        Output: {{output_file}}
+        Epics: {{epic_count}}
+        Stories: {{total_story_count}}
+        Functional Requirements Covered: {{fr_covered}}/{{fr_total}}
+
+        Epic Breakdown:
+        - Epic 1: User Authentication (4 stories)
+        - Epic 2: Content Management (6 stories)
+        - Epic 3: Usage Tracking (5 stories)
+        - Epic 4: Export Functionality (3 stories)
+
+        FR Coverage: ✓ All requirements mapped
+        ```
+
+        If any FRs unmapped, show warning:
+        ```
+        ⚠ Warning: 2 functional requirements not covered:
+        - FR7: Advanced search filters
+        - FR12: Offline mode support
+
+        Review epics and add stories to cover these requirements.
+        ```
+      </details>
+    </step>
+
+  </template>
+
+
+  <!-- TEMPLATE: Merge story context files -->
+  <template name="merge-story-contexts">
+    <param name="context_files" />    <!-- List of {story-key}-context.md files -->
+    <param name="sprint_status_file" /> <!-- Path to sprint-status.yaml -->
+
+    <step n="1" goal="Validate context files">
+      <action>Verify all context files are well-formed</action>
+      <details>
+        For each context_file:
+
+        1. **Extract story key** from filename:
+           - "1-1-user-auth-context.md" → story_key = "1-1-user-auth"
+
+        2. **Validate XML structure**:
+           - Must contain root &lt;story-context&gt; element
+           - Must have &lt;story-metadata&gt; section
+           - Must have &lt;artifacts&gt; section
+           - Report malformed files
+
+        3. **Check completeness**:
+           - Verify story-context references existing story file
+           - Verify story exists in sprint-status.yaml
+           - Report orphaned contexts
+      </details>
+    </step>
+
+    <step n="2" goal="Update sprint status atomically">
+      <action>Mark all stories as ready-for-dev</action>
+      <details>
+        1. **Acquire lock**: {{sprint_status_file}}.lock (with retry)
+
+        2. **Read current sprint-status.yaml**
+
+        3. **Update story statuses**:
+           For each context_file:
+           - Find story_key in sprint-status
+           - Update status: drafted → ready-for-dev
+           - Record context_file path in metadata
+
+        4. **Write updated sprint-status.yaml**
+
+        5. **Release lock**: Delete {{sprint_status_file}}.lock
+
+        6. **Report update**:
+           ```
+           Sprint Status Updated:
+           - 1-1-user-auth: drafted → ready-for-dev
+           - 1-2-profile-mgmt: drafted → ready-for-dev
+           - 2-1-content-create: drafted → ready-for-dev
+           ... (15 stories total)
+           ```
+      </details>
+    </step>
+
+  </template>
+
+
+  <!-- TEMPLATE: Merge story batch results -->
+  <template name="merge-story-batch">
+    <param name="story_files" />      <!-- List of {story-key}.md files created -->
+    <param name="sprint_status_file" /> <!-- Path to sprint-status.yaml -->
+    <param name="batch_number" />     <!-- Current batch number for reporting -->
+
+    <step n="1" goal="Validate story files">
+      <action>Verify all story files are complete</action>
+      <details>
+        For each story_file:
+
+        1. **Check required sections**:
+           - User Story statement
+           - Acceptance Criteria
+           - Tasks and Subtasks
+           - Dev Notes
+
+        2. **Extract metadata**:
+           - Story key, epic, title
+           - Task count
+           - AC count
+           - Complexity estimate (if present)
+
+        3. **Report incomplete stories**:
+           If missing required sections, flag for review
+      </details>
+    </step>
+
+    <step n="2" goal="Update sprint status">
+      <action>Mark stories as drafted</action>
+      <details>
+        1. **Acquire lock**: {{sprint_status_file}}.lock
+
+        2. **Update statuses**:
+           For each story_file:
+           - Update status: backlog → drafted
+           - Record story file path
+
+        3. **Save and release lock**
+
+        4. **Report batch completion**:
+           ```
+           Story Batch {{batch_number}} Complete:
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           Stories Created: {{count}}
+           Total Tasks: {{task_count}}
+           Total ACs: {{ac_count}}
+
+           Ready for operator review:
+           - 1-1-user-auth.md
+           - 1-2-profile-mgmt.md
+           - 1-3-session-mgmt.md
+           ```
+      </details>
+    </step>
+
+    <step n="3" goal="Aggregate batch learnings">
+      <action>Extract insights from parallel story creation</action>
+      <details>
+        Scan all story files for:
+
+        1. **Dev Notes patterns**:
+           - Common dependencies mentioned
+           - Shared technical constraints
+           - Reusable code patterns
+
+        2. **Create batch summary**:
+           ```markdown
+           # Batch {{batch_number}} Learnings
+
+           ## Common Patterns
+           - All stories use authentication middleware
+           - Database migrations needed for user schema
+           - Shared validation utilities required
+
+           ## Dependencies
+           - Stories 1.1-1.3 all depend on user model
+           - Recommend creating user model first
+
+           ## Recommendations for Next Batch
+           - Reference user model implementation
+           - Apply consistent error handling pattern
+           - Reuse authentication helpers
+           ```
+
+        3. **Store for next batch**:
+           Save learnings to .system/batch-{{batch_number}}-learnings.md
+           Next batch will load this as context
+      </details>
+    </step>
+
+  </template>
+
+
+  <!-- HELPER: Clean up temporary files -->
+  <template name="cleanup-temp-files">
+    <param name="temp_files" />       <!-- List of temporary files to remove -->
+    <param name="keep_on_failure" />  <!-- Boolean: keep files if merge failed -->
+
+    <logic>
+      If merge succeeded or keep_on_failure is false:
+        - Delete all temp section files
+        - Delete coordination files
+        - Keep only final merged outputs
+
+      Report:
+      "Cleaned up {{count}} temporary files"
+    </logic>
+  </template>
+
+</merger>

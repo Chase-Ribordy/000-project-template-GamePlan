@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DEPENDENCY GRAPH BUILDER UTILITY
+
+  Purpose: Parse epic/story dependencies and create parallel execution batches
+
+  Usage:
+    <include href="dependency-graph.xml" />
+    <call-template name="build-story-dependency-graph">
+      <with-param name="epics_file" select="'epics.md'" />
+      <with-param name="output_batches" select="$batches" />
+    </call-template>
+
+  Capabilities:
+  - Parses explicit dependencies from story descriptions
+  - Infers implicit dependencies (Epic 1 foundation stories)
+  - Groups stories into parallel-safe batches
+  - Detects circular dependencies
+  - Generates execution order with maximum parallelism
+-->
+
+<dependency-graph>
+
+  <!-- MAIN TEMPLATE: Build story dependency graph from epics -->
+  <template name="build-story-dependency-graph">
+    <param name="epics_file" />       <!-- Path to epics.md -->
+    <param name="output_batches" />   <!-- Variable to store batch assignments -->
+
+    <step n="1" goal="Parse stories and extract dependencies">
+      <action>Scan epics.md for all stories and their dependencies</action>
+      <details>
+        Read epics_file and extract:
+
+        1. **Story inventory**:
+           ```
+           For each "### Story {epic}.{num}: {title}":
+           - story_key: "{epic}-{num}-{title-kebab}"
+           - epic_id: {epic}
+           - story_num: {num}
+           - title: {title}
+           - description: Full story text
+           - acceptance_criteria: List of ACs
+           ```
+
+        2. **Explicit dependencies**:
+           Look for dependency markers in story descriptions:
+           - "depends on Story 1.1"
+           - "requires completion of Story 2.3"
+           - "builds on Story 1.2"
+           - "after Story 3.1 is complete"
+
+           Extract: {story_key: [list of dependency story_keys]}
+
+        3. **Implicit dependencies**:
+           Apply rules:
+           - **Epic 1 foundation**: Stories 1.1-1.3 are foundation
+             All other stories depend on Epic 1 foundation stories
+           - **Sequential within epic**: Story N.2 depends on N.1,
+             Story N.3 depends on N.2 (unless explicitly independent)
+           - **Shared infrastructure**: Stories mentioning "database",
+             "auth", "API" may depend on foundation stories
+
+        4. **Build dependency map**:
+           ```javascript
+           dependencies = {
+             "1-1-user-auth": [],              // No deps (foundation)
+             "1-2-profile-mgmt": ["1-1-user-auth"],
+             "1-3-session-mgmt": ["1-1-user-auth"],
+             "2-1-content-create": ["1-1-user-auth", "1-2-profile-mgmt"],
+             "2-2-content-list": ["2-1-content-create"],
+             "3-1-metrics-track": ["1-1-user-auth"],
+             "3-2-metrics-display": ["3-1-metrics-track"]
+           }
+           ```
+      </details>
+    </step>
+
+    <step n="2" goal="Detect circular dependencies">
+      <action>Validate dependency graph for cycles</action>
+      <details>
+        Use depth-first search to detect cycles:
+
+        1. **For each story**:
+           - Mark as "visiting"
+           - Visit all dependencies
+           - If encounter "visiting" story, cycle detected
+           - Mark as "visited" when complete
+
+        2. **If cycle found**:
+           ```
+           ⚠ ERROR: Circular dependency detected!
+
+           Story 2.3 depends on Story 3.1
+           Story 3.1 depends on Story 3.4
+           Story 3.4 depends on Story 2.3
+
+           This cycle must be resolved before parallel execution.
+           Review epic definitions and remove circular references.
+           ```
+
+           Abort and prompt operator to fix epics.
+
+        3. **If no cycles**:
+           Proceed to batch creation
+      </details>
+    </step>
+
+    <step n="3" goal="Create parallel execution batches">
+      <action>Group stories into dependency-ordered batches</action>
+      <details>
+        Use topological sort with level assignment:
+
+        1. **Calculate dependency levels**:
+           ```
+           Level 0: Stories with no dependencies (foundation)
+             → 1-1-user-auth, 1-2-profile-mgmt (if independent)
+
+           Level 1: Stories depending only on Level 0
+             → 1-3-session-mgmt, 2-1-content-create, 3-1-metrics-track
+
+           Level 2: Stories depending on Level 0 or 1
+             → 2-2-content-list, 3-2-metrics-display
+
+           Level 3: Stories depending on Level 0, 1, or 2
+             → 2-3-content-edit, 3-3-metrics-export
+           ```
+
+        2. **Assign stories to batches**:
+           Each level becomes a batch (stories in batch can run parallel):
+           ```yaml
+           batches:
+             - batch_id: 0
+               stories:
+                 - 1-1-user-auth
+                 - 1-2-profile-mgmt
+               dependencies: []
+               estimated_time: 8m  # max(story times in batch)
+
+             - batch_id: 1
+               stories:
+                 - 1-3-session-mgmt
+                 - 2-1-content-create
+                 - 3-1-metrics-track
+               dependencies: [batch-0]
+               estimated_time: 6m
+
+             - batch_id: 2
+               stories:
+                 - 2-2-content-list
+                 - 3-2-metrics-display
+               dependencies: [batch-1]
+               estimated_time: 5m
+           ```
+
+        3. **Optimize batch sizes**:
+           - If batch has 1 story, try to merge with adjacent batch
+           - If batch has >10 stories, consider splitting if dependencies allow
+           - Balance parallelism vs coordination overhead
+      </details>
+    </step>
+
+    <step n="4" goal="Generate execution plan">
+      <action>Create human-readable execution plan</action>
+      <details>
+        Format batch plan for operator review:
+
+        ```markdown
+        # Story Execution Plan
+
+        ## Summary
+        - Total Stories: 18
+        - Batches: 4
+        - Estimated Sequential Time: 36 minutes
+        - Estimated Parallel Time: 12 minutes
+        - Time Savings: 24 minutes (67%)
+
+        ## Execution Order
+
+        ### Batch 0: Foundation (2 stories, parallel)
+        Stories that establish core infrastructure
+
+        1. **1-1-user-auth**: User Authentication
+           - No dependencies
+           - Estimated time: 5min
+           - Creates: User model, auth middleware, login endpoints
+
+        2. **1-2-profile-mgmt**: Profile Management
+           - No dependencies
+           - Estimated time: 4min
+           - Creates: Profile model, CRUD endpoints
+
+        **Batch execution**: Both stories run in parallel → 5min total
+
+        ---
+
+        ### Batch 1: Core Features (3 stories, parallel)
+        Features building on foundation
+
+        1. **1-3-session-mgmt**: Session Management
+           - Depends on: 1-1-user-auth
+           - Estimated time: 4min
+
+        2. **2-1-content-create**: Content Creation
+           - Depends on: 1-1-user-auth, 1-2-profile-mgmt
+           - Estimated time: 6min
+
+        3. **3-1-metrics-track**: Usage Tracking
+           - Depends on: 1-1-user-auth
+           - Estimated time: 5min
+
+        **Batch execution**: All 3 stories run in parallel → 6min total
+
+        ---
+
+        ### Batch 2: Extended Features (2 stories, parallel)
+        Advanced functionality
+
+        [... continue for remaining batches ...]
+
+        ## Dependency Visualization
+
+        ```
+        Batch 0:  [1-1-user-auth]  [1-2-profile-mgmt]
+                      ↓                    ↓
+        Batch 1:  [1-3-session] [2-1-content] [3-1-metrics]
+                                     ↓             ↓
+        Batch 2:              [2-2-list]  [3-2-display]
+        ```
+
+        ## Operator Decision Points
+
+        After Batch 0 completes:
+        → Review foundation stories for vision alignment
+        → Confirm architectural decisions before proceeding
+
+        After Batch 1 completes:
+        → Review core feature stories
+        → Inject any vision refinements for extended features
+
+        [... continue for all batches ...]
+        ```
+
+        Store plan in output_batches variable.
+      </details>
+    </step>
+
+  </template>
+
+
+  <!-- TEMPLATE: Build epic-level dependency graph -->
+  <template name="build-epic-dependency-graph">
+    <param name="epics_file" />
+    <param name="output_graph" />
+
+    <step n="1" goal="Parse epic dependencies">
+      <action>Extract dependencies between epics</action>
+      <details>
+        Scan epics.md for epic-level dependencies:
+
+        1. **Epic 1 special handling**:
+           - Always executes first (foundation)
+           - No parallel processing for Epic 1
+
+        2. **Parse remaining epics**:
+           Look for:
+           - "This epic depends on Epic N"
+           - "Requires Epic N to be complete"
+           - Cross-epic story references
+
+        3. **Build graph**:
+           ```javascript
+           epic_dependencies = {
+             "epic-1": [],           // Foundation, no deps
+             "epic-2": ["epic-1"],   // Content depends on auth
+             "epic-3": ["epic-1"],   // Metrics depends on auth
+             "epic-4": ["epic-2", "epic-3"]  // Export depends on both
+           }
+           ```
+      </details>
+    </step>
+
+    <step n="2" goal="Create epic execution groups">
+      <action>Group independent epics for parallel breakdown</action>
+      <details>
+        1. **Assign epic levels**:
+           ```
+           Level 0: [epic-1]            → Sequential (foundation)
+           Level 1: [epic-2, epic-3]    → Parallel (both depend on epic-1)
+           Level 2: [epic-4]            → Sequential (depends on 2 & 3)
+           ```
+
+        2. **Create execution plan**:
+           ```markdown
+           # Epic Breakdown Plan
+
+           Phase 1: Epic 1 Foundation
+           - Execute sequentially (establishes project structure)
+           - Time: ~6 minutes
+
+           Phase 2: Parallel Epic Breakdown
+           - Epic 2: Content Management (parallel)
+           - Epic 3: Usage Metrics (parallel)
+           - Time: ~6 minutes (both run simultaneously)
+
+           Phase 3: Epic 4 Final
+           - Execute sequentially (depends on epics 2 & 3)
+           - Time: ~5 minutes
+
+           Total Time: 17 minutes (vs 25 minutes sequential)
+           Savings: 8 minutes (32%)
+           ```
+
+        Store in output_graph variable.
+      </details>
+    </step>
+
+  </template>
+
+
+  <!-- HELPER: Topological sort for dependency ordering -->
+  <template name="topological-sort">
+    <param name="dependency_map" />   <!-- {node: [dependencies]} -->
+    <param name="output_levels" />    <!-- Variable for level assignments -->
+
+    <logic>
+      Implement Kahn's algorithm:
+
+      1. Find all nodes with no dependencies (level 0)
+      2. Remove level 0 nodes from graph
+      3. Find all nodes with only level 0 dependencies (level 1)
+      4. Remove level 1 nodes from graph
+      5. Repeat until all nodes assigned or cycle detected
+
+      Return: {node: level} assignments
+    </logic>
+  </template>
+
+
+  <!-- HELPER: Estimate story execution time -->
+  <template name="estimate-story-time">
+    <param name="story" />            <!-- Story object with ACs, tasks -->
+    <param name="estimated_minutes" /> <!-- Output variable -->
+
+    <logic>
+      Heuristics:
+      - Base time: 2 minutes
+      - Add 1 minute per acceptance criterion
+      - Add 0.5 minutes per task
+      - Add 1 minute if story mentions "database migration"
+      - Add 1 minute if story mentions "authentication"
+      - Add 2 minutes if story mentions "integration with external service"
+      - Max estimate: 10 minutes (flag for manual review if higher)
+
+      Return estimated time in minutes.
+    </logic>
+  </template>
+
+</dependency-graph>

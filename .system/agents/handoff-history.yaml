@@ -1,0 +1,84 @@
+# Agent Handoff History
+# Tracks contract-based handoffs between agents
+# Used for coordination, debugging, and workflow optimization
+
+version: 1.0.0
+
+# Handoff log
+handoffs:
+  # Example structure:
+  # - handoff_id: handoff-001
+  #   timestamp: "2025-11-15T10:45:00Z"
+  #
+  #   from_agent: contract-architect
+  #   to_agent: validation-controller
+  #
+  #   trigger: event  # or: orchestrator_request, agent_request
+  #   event_type: contract_created  # if trigger=event
+  #
+  #   context:
+  #     story: 1-2-user-authentication
+  #     component: login-form
+  #     pass: second
+  #
+  #   contract:
+  #     type: component_contract
+  #     location: .system/contracts/yaml/login-form-contract.yaml
+  #     inputs:
+  #       component_path: .system/components/login-form/
+  #       contract_ref: .system/contracts/markdown/login-form-contract.md
+  #     outputs_required:
+  #       validation_levels: [1, 2, 3, 4]
+  #       validation_report: .system/validation/login-form-validation.yaml
+  #
+  #   acceptance_criteria:
+  #     - All 4 validation levels passed
+  #     - No integration conflicts
+  #     - Contract compliance verified
+  #
+  #   handoff_status: completed
+  #
+  #   outcome:
+  #     received_by: validation-controller
+  #     received_at: "2025-11-15T10:45:30Z"
+  #     completed_at: "2025-11-15T10:52:00Z"
+  #     success: true
+  #     acceptance_met: true
+  #     next_handoff: integration-manager  # if applicable
+
+# Active handoffs (pending acceptance)
+active:
+  # Currently no active handoffs
+  # Structure: same as handoffs above, but status: pending
+
+# Handoff patterns (for optimization)
+patterns:
+  # Common handoff chains
+  component_lifecycle:
+    - contract-architect → validation-controller
+    - validation-controller → integration-manager
+    - integration-manager → orchestrator-exe (completion report)
+
+  story_implementation:
+    - development-executor → testing-specialist
+    - testing-specialist → validation-controller
+    - validation-controller → orchestrator-exe (completion report)
+
+# Statistics
+statistics:
+  total_handoffs: 0
+  successful: 0
+  failed: 0
+  average_duration_seconds: 0
+
+  by_agent_pair:
+    # Tracks handoff frequency between agent pairs
+    # Example: "contract-architect->validation-controller": 5
+
+# Notes
+notes: |
+  - Handoffs are contract-based: clear inputs, outputs, acceptance criteria
+  - Event-driven handoffs are automatic, orchestrator/agent-request are manual
+  - Failed handoffs should escalate to orchestrator-exe
+  - Patterns help predict workflow bottlenecks
+  - Active handoffs are moved to history upon completion

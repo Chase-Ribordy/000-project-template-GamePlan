@@ -1,0 +1,187 @@
+# PARALLEL COORDINATION STATE TEMPLATE
+#
+# This file tracks the state of parallel terminal execution.
+# It is initialized by the orchestrator and updated by both orchestrator and worker terminals.
+#
+# File Locking Protocol:
+# - Before reading/writing: Create coordination.yaml.lock file
+# - After operation: Delete coordination.yaml.lock file
+# - Retry with exponential backoff if lock exists (max 10 attempts, 500ms initial delay)
+#
+# Usage:
+# - Orchestrator initializes this file at start of parallel execution
+# - Worker terminals update their status as they progress
+# - Orchestrator polls for status updates and displays progress
+# - On completion, orchestrator merges results
+
+orchestrator:
+  started_at: null              # ISO timestamp when orchestration started
+  completed_at: null            # ISO timestamp when all work finished
+  status: initialized           # initialized|distributing|monitoring|completed|failed
+  total_work_units: 0           # Total number of work items to process
+  completed: 0                  # Count of successfully completed work units
+  failed: 0                     # Count of failed work units
+  execution_time_seconds: null  # Total execution time
+
+  # Orchestrator configuration
+  config:
+    max_terminals: 7            # Maximum parallel terminals
+    work_type: null             # epic-breakdown|story-creation|context-assembly
+    timeout_minutes: 15         # Timeout per work unit
+    retry_failed: true          # Whether to retry failed units
+
+  # Execution metrics
+  metrics:
+    avg_time_per_unit: null     # Average execution time in seconds
+    fastest_unit: null          # {work_unit_id, time_seconds}
+    slowest_unit: null          # {work_unit_id, time_seconds}
+    estimated_time_remaining: null # Seconds
+
+# Terminal assignments and status
+# Each terminal gets a unique ID and work assignment
+terminals: {}
+  # Example structure (populated by orchestrator):
+  #
+  # terminal-1:
+  #   agent_type: epic-worker         # Type of agent running
+  #   work_unit_id: epic-2            # Assigned work unit ID
+  #   work_unit_title: "Content Management"  # Human-readable title
+  #   status: assigned                # assigned|in-progress|completed|failed
+  #   assigned_at: "2025-01-16T10:30:00Z"
+  #   started_at: null
+  #   completed_at: null
+  #   execution_time_seconds: null
+  #   result_file: null               # Path to output file when completed
+  #   error_message: null             # Error details if failed
+  #   last_heartbeat: null            # Timestamp of last status update
+  #
+  # terminal-2:
+  #   agent_type: story-worker
+  #   work_unit_id: 1-2-profile-mgmt
+  #   work_unit_title: "Profile Management"
+  #   status: in-progress
+  #   assigned_at: "2025-01-16T10:30:01Z"
+  #   started_at: "2025-01-16T10:30:15Z"
+  #   completed_at: null
+  #   execution_time_seconds: null
+  #   result_file: null
+  #   error_message: null
+  #   last_heartbeat: "2025-01-16T10:32:00Z"
+
+# Work queue management
+work_queue:
+  pending: []     # Work units not yet assigned [work_unit_id, ...]
+  assigned: []    # Work units assigned to terminals [work_unit_id, ...]
+  in_progress: [] # Work units currently being processed [work_unit_id, ...]
+  completed: []   # Successfully completed work units [work_unit_id, ...]
+  failed: []      # Failed work units [work_unit_id, ...]
+
+# Work unit definitions
+# Detailed specifications for each work item
+work_units: {}
+  # Example structure (populated by orchestrator):
+  #
+  # epic-2:
+  #   id: epic-2
+  #   type: epic-breakdown          # Type of work
+  #   title: "Content Management"
+  #   description: "Decompose Epic 2 into detailed stories"
+  #   priority: 2                   # Execution priority (lower = higher priority)
+  #   estimated_time_minutes: 5
+  #   output_file: "epic-2-section.md"
+  #
+  #   # Context data needed by worker
+  #   context:
+  #     epic_number: 2
+  #     epic_goal: "Enable users to create and manage content"
+  #     functional_requirements: ["FR4", "FR5", "FR6", "FR7"]
+  #     prd_excerpt: "..."
+  #     dependencies: ["epic-1"]
+  #
+  # 1-2-profile-mgmt:
+  #   id: 1-2-profile-mgmt
+  #   type: story-creation
+  #   title: "Profile Management"
+  #   description: "Create detailed story for user profile management"
+  #   priority: 2
+  #   estimated_time_minutes: 3
+  #   output_file: "stories/1-2-profile-mgmt.md"
+  #
+  #   context:
+  #     epic_id: 1
+  #     story_number: 2
+  #     epic_excerpt: "..."
+  #     previous_story_learnings: "..."
+  #     batch_learnings: "..."
+  #     dependencies: ["1-1-user-auth"]
+
+# Shared context available to all workers
+# Read-only data that all terminals need access to
+shared_context:
+  project_root: null
+  output_folder: null
+
+  # Document paths
+  documents:
+    prd: null
+    architecture: null
+    epics: null
+    tech_spec: null
+    domain_brief: null
+
+  # Standards and patterns
+  standards:
+    story_template: null
+    ac_format: "BDD (Given/When/Then)"
+    dev_notes_required: true
+
+  # Project metadata
+  project:
+    name: null
+    type: null              # greenfield|brownfield
+    tech_stack: []
+    testing_framework: null
+
+# Error tracking and recovery
+errors:
+  count: 0
+  details: []
+    # Example:
+    # - terminal_id: terminal-3
+    #   work_unit_id: epic-4
+    #   timestamp: "2025-01-16T10:35:00Z"
+    #   error_type: timeout
+    #   error_message: "Terminal exceeded 15 minute timeout"
+    #   recovery_action: reassigned
+    #   reassigned_to: terminal-5
+
+# Progress checkpoints for operator touchpoints
+checkpoints: []
+  # Example:
+  # - checkpoint_id: batch-1-review
+  #   type: operator-review
+  #   triggered_at: "2025-01-16T10:40:00Z"
+  #   status: pending         # pending|approved|modifications-requested
+  #   description: "Review Batch 1 stories before proceeding to Batch 2"
+  #   work_units_to_review: ["1-1-user-auth", "1-2-profile-mgmt"]
+  #   operator_feedback: null
+  #   approved_at: null
+
+# Execution log for audit trail
+log: []
+  # Example:
+  # - timestamp: "2025-01-16T10:30:00Z"
+  #   event: orchestration_started
+  #   details: {work_type: "epic-breakdown", total_units: 4}
+  #
+  # - timestamp: "2025-01-16T10:30:05Z"
+  #   event: terminal_assigned
+  #   details: {terminal_id: "terminal-1", work_unit_id: "epic-2"}
+  #
+  # - timestamp: "2025-01-16T10:32:30Z"
+  #   event: work_unit_completed
+  #   details: {terminal_id: "terminal-1", work_unit_id: "epic-2", execution_time: 145}
+  #
+  # - timestamp: "2025-01-16T10:35:00Z"
+  #   event: work_unit_failed
+  #   details: {terminal_id: "terminal-3", work_unit_id: "epic-4", error: "timeout"}
