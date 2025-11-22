@@ -57,18 +57,38 @@ Match against:
 - Wikipedia (celebrity heights/weights)
 - Sports reference sites
 
-### Client Input (TBD)
+### Client Input (SOLVED)
 
-- [ ] How do coaches input client muscle insertion data?
-- [ ] Photo-based? Form-based? AI analysis?
+**Already exists from upstream system:**
+- **JSON #1**: Muscle insertions + biomechanics (from structural analysis tool)
+- **JSON #2**: Height + weight (from client intake form)
+
+Process: Manual structural analysis → JSONs → feeds into match system
+
+Future: Maybe AI estimation, but manual for now.
+
+---
+
+## Visual Output
+
+**V1 approach:**
+- Single picture view
+- Click/toggle between client photo and match photo
+- Simpler to build initially
+
+**Future (V2):**
+- Side-by-side comparison view
+
+**Challenge: High quality images required**
+- Need good photos of bodybuilders/celebrities
+- Image sourcing is a real constraint
 
 ---
 
 ## Questions Still Open
 
-- [ ] What does the visual report look like?
+- [ ] Where to source high-quality bodybuilder/celebrity images?
 - [ ] Video export built-in, or screen record?
-- [ ] Who's the primary user - coach or client?
 
 ---
 
