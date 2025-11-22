@@ -83,12 +83,30 @@ Future: Maybe AI estimation, but manual for now.
 - Need good photos of bodybuilders/celebrities
 - Image sourcing is a real constraint
 
+### Image Sourcing Strategy
+
+**Sources:**
+- Social media scraping (Instagram, etc.)
+- Fan accounts / hashtags that aggregate classic bodybuilder photos
+- Older generations (golden era) - find accounts that curate high-quality vintage photos
+- Photos already widely shared = more "public use" defensible
+
+**Process:**
+- Hire someone to do initial image gathering (human task, not AI)
+- Agent/automation can't reliably judge image quality
+- **Founder QA** - Chase validates final image selections
+
+**Workflow:**
+1. Contractor finds candidate images
+2. Chase reviews for quality + appropriateness
+3. Approved images added to dataset
+
 ---
 
 ## Questions Still Open
 
-- [ ] Where to source high-quality bodybuilder/celebrity images?
 - [ ] Video export built-in, or screen record?
+- [ ] Dataset size for V1? (50? 100? 200?)
 
 ---
 
