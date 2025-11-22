@@ -106,7 +106,8 @@ Future: Maybe AI estimation, but manual for now.
 ## Questions Still Open
 
 - [ ] Video export built-in, or screen record?
-- [ ] Dataset size for V1? (50? 100? 200?)
+
+**Dataset size: 50-100 bodybuilders/celebrities** (confirmed)
 
 ---
 
