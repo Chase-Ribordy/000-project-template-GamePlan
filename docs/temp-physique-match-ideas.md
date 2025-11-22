@@ -37,13 +37,38 @@ Match against:
 
 ---
 
-## Questions to Explore
+## Data Strategy
 
-- [ ] Where does the bodybuilder/celebrity dataset come from?
+### Bodybuilder/Celebrity Dataset
+
+**Source approach:**
+- Web scraping from competition sites (official bodybuilding data)
+- Sites with published stats (height, weight, measurements)
+- Manual QA pass to catch obvious errors
+
+**Quality bar:** "Ballpark correct" is fine
+- Not scientific/medical - it's meant to be **fun**
+- Close enough for entertainment value
+- Flag and fix anything obviously wrong
+
+**Potential data sources to explore:**
+- IFBB/NPC competition records
+- Bodybuilding.com profiles
+- Wikipedia (celebrity heights/weights)
+- Sports reference sites
+
+### Client Input (TBD)
+
 - [ ] How do coaches input client muscle insertion data?
+- [ ] Photo-based? Form-based? AI analysis?
+
+---
+
+## Questions Still Open
+
 - [ ] What does the visual report look like?
 - [ ] Video export built-in, or screen record?
-- [ ] Who's the user - the coach or the client?
+- [ ] Who's the primary user - coach or client?
 
 ---
 
@@ -52,3 +77,4 @@ Match against:
 - Content play for fitness influencers/coaches
 - Visual-first design (needs to look good on video)
 - Dataset is the moat - hard to replicate
+- **Fun > Precision** - entertainment product, not medical tool
