@@ -70,16 +70,16 @@
    - Decision-making conversations
    - Monitoring and control commands reference
 
-**Result:** 3 operational guides covering all orchestrator-exe modes
+**Result:** 3 operational guides covering all orc-exe modes
 
 ---
 
 ### ✅ Phase 3: Integration Validation
 
-**Location:** `tests/orchestrator-exe/`
+**Location:** `tests/orc-exe/`
 
 1. **skill-isolation-test.js** (277 lines)
-   - Tests all 8 orchestrator-exe skills for isolation markers
+   - Tests all 8 orc-exe skills for isolation markers
    - Verifies direct invocation pattern (not event-driven)
    - Checks no BMAD event emission
    - Validates isolation documentation completeness
@@ -118,7 +118,7 @@
 
 ### ✅ Phase 4: Comprehensive Documentation
 
-**Location:** `docs/orchestrator-exe/`
+**Location:** `docs/orc-exe/`
 
 1. **EXAMPLES.md** (1,246 lines) - **MAIN DOCUMENTATION**
    - Quick start guide
@@ -188,7 +188,7 @@
 
 ### 2. Comprehensive Testing
 
-✅ Skill isolation validation (ensures orchestrator-exe independence)
+✅ Skill isolation validation (ensures orc-exe independence)
 ✅ MCP contract integration compatibility
 ✅ Parallel session tracking structure verification
 ✅ Automated test runner with reporting
@@ -205,7 +205,7 @@
 
 ### 4. Integration Validation
 
-✅ Verifies skill isolation (orchestrator-exe only access)
+✅ Verifies skill isolation (orc-exe only access)
 ✅ Confirms no BMAD event emission (top-down coordination maintained)
 ✅ Validates MCP contract compatibility
 ✅ Tests session tracking completeness
@@ -218,7 +218,7 @@
 ### Automated Tests
 
 ```bash
-cd tests/orchestrator-exe
+cd tests/orc-exe
 bash run-all-tests.sh
 ```
 
@@ -232,7 +232,7 @@ bash run-all-tests.sh
 ### Manual Validation
 
 All checklist items from `VALIDATION-CHECKLIST.md`:
-- ✅ All 8 orchestrator-exe skills exist
+- ✅ All 8 orc-exe skills exist
 - ✅ Isolation markers present in all skills
 - ✅ Example files structurally complete
 - ✅ YAML contracts have valid syntax
@@ -243,11 +243,11 @@ All checklist items from `VALIDATION-CHECKLIST.md`:
 
 ## Integration with Existing System
 
-### Orchestrator-EXE Components (Pre-existing)
+### ORC-EXE Components (Pre-existing)
 
-- `.claude/agents/orchestrator-exe.md` - Agent definition
-- `.claude/commands/orchestrator-exe.md` - Slash command
-- `.claude/skills/orchestrator-exe/*.md` - 8 skills
+- `.claude/agents/orc-exe.md` - Agent definition
+- `.claude/commands/orc-exe.md` - Slash command
+- `.claude/skills/orc-exe/*.md` - 8 skills
 - `.system/execution-status.yaml` - THREE-PASS tracking
 - `.system/parallel-work/` - Infrastructure directory
 
@@ -261,10 +261,10 @@ All checklist items from `VALIDATION-CHECKLIST.md`:
 ### New Components Added (Terminal 7)
 
 - `.system/parallel-work/examples/` - 6 example files
-- `tests/orchestrator-exe/` - 5 validation files
-- `docs/orchestrator-exe/` - 2 documentation files
+- `tests/orc-exe/` - 5 validation files
+- `docs/orc-exe/` - 2 documentation files
 
-**Result:** Complete examples and validation layer on top of existing orchestrator-exe system
+**Result:** Complete examples and validation layer on top of existing orc-exe system
 
 ---
 
@@ -362,7 +362,7 @@ The following commands are **referenced in examples but NOT implemented**:
 ## Operator Workflow (Complete Path)
 
 1. **Sprint Planning** → Creates `sprint-status.yaml`
-2. **Activate Orchestrator** → `/orchestrator-exe`
+2. **Activate Orchestrator** → `/orc-exe`
 3. **Analysis Phase** → Orchestrator analyzes dependencies
 4. **Decision Support** → Recommends manual or autonomous
 5. **Mode Selection** → Operator chooses mode
@@ -414,18 +414,18 @@ The following commands are **referenced in examples but NOT implemented**:
 
 ### 1. Validate Setup
 ```bash
-cd tests/orchestrator-exe
+cd tests/orc-exe
 bash run-all-tests.sh
 ```
 
 ### 2. Study Examples
-- Start with `docs/orchestrator-exe/EXAMPLES.md`
+- Start with `docs/orc-exe/EXAMPLES.md`
 - Review `.system/parallel-work/examples/activation-scenarios.md`
 - Study terminal prompts format
 
 ### 3. Try Manual Mode
 - Run sprint planning
-- Invoke `/orchestrator-exe`
+- Invoke `/orc-exe`
 - Select manual mode
 - Follow generated prompts
 
@@ -450,8 +450,8 @@ bash run-all-tests.sh
 | Terminal prompts | ✅ | `.system/parallel-work/examples/terminal-prompts-manual.md` |
 | YAML contracts | ✅ | `.system/parallel-work/examples/yaml-contracts-autonomous.md` |
 | Activation examples | ✅ | `.system/parallel-work/examples/activation-scenarios.md` |
-| Integration validation | ✅ | `tests/orchestrator-exe/*.js` (3 test suites) |
-| Comprehensive docs | ✅ | `docs/orchestrator-exe/EXAMPLES.md` (1,246 lines) |
+| Integration validation | ✅ | `tests/orc-exe/*.js` (3 test suites) |
+| Comprehensive docs | ✅ | `docs/orc-exe/EXAMPLES.md` (1,246 lines) |
 
 **Total:** 7/7 requirements met ✅
 
@@ -462,9 +462,9 @@ bash run-all-tests.sh
 ### Original Requirements
 
 1. ✅ Create example session files
-2. ✅ Create orchestrator-exe activation examples
+2. ✅ Create orc-exe activation examples
 3. ✅ Integration validation
-4. ✅ Create `docs/orchestrator-exe/EXAMPLES.md`
+4. ✅ Create `docs/orc-exe/EXAMPLES.md`
 
 ### Deliverables
 
@@ -480,7 +480,7 @@ bash run-all-tests.sh
 - ✅ Complete test coverage (isolation, MCP, tracking)
 - ✅ Comprehensive documentation (1,500+ lines)
 - ✅ Operator-focused with clear workflows
-- ✅ Integration with existing orchestrator-exe verified
+- ✅ Integration with existing orc-exe verified
 
 ---
 

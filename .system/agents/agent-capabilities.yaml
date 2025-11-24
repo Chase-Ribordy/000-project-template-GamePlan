@@ -1,447 +1,221 @@
 # Agent Capabilities Registry
-# This file defines all available agents, their specializations, and task type mappings
-# Used by orchestrator-exe's agent-selector skill for automatic agent assignment
+# Simplified flat structure for sub-agent model
+# Used by orc-exe for agent coordination
 
-version: 1.0.0
-last_updated: 2025-11-15
+version: 2.0.0
+last_updated: 2025-11-23
 
 # ==============================================================================
-# STRATEGIC LAYER AGENTS - Top-level coordination and resource management
+# CORE AGENTS - Flat hierarchy, no layers
 # ==============================================================================
 
-strategic:
-  orchestrator-exe:
-    name: Orchestrator-EXE
+agents:
+  orc-exe:
+    name: ORC-EXE
     role: Sprint Execution Coordinator
-    layer: strategic
-    location: .system/agents/strategic/orchestrator-exe.md
+    location: .system/agents/orc-exe.md
 
     specializations:
       - Sprint execution orchestration
       - Parallel work coordination
-      - Top-level decision making
       - Multi-terminal management
       - Pass transition coordination
+      - Contract generation
+      - Integration management
+      - Validation orchestration
 
     skills_access:
-      - orchestrator-exe/*  # All isolated orchestrator skills
-      - agent-selector      # Agent assignment decisions
-      - coordinate-agents   # BMAD agent delegation
-      - track-parallel-work # Session management
-      - decision-support    # Manual vs autonomous
-      - sprint-batch-analyzer # Dependency analysis
-      - terminal-prompt-generator # Prompt creation
-      - pass-awareness-advisor # Phase guidance
-      - contract-orchestrator # YAML contract generation
-      - parallel-coordinator # Real-time conflict detection
-      - parallel-status # Status display
+      - orc-exe/*                # All orchestrator skills
+      - sprint-batch-analyzer    # Dependency analysis
+      - pass-manager             # Pass transitions
+      - review-queue             # Code review management
 
     execution_modes:
-      - manual_coordination  # Operator-driven decisions
-      - autonomous_delegation # Auto-assign agents to tasks
+      - manual_coordination      # Operator-driven decisions
+      - autonomous_delegation    # Auto-assign agents to tasks
 
-    invocation: direct  # Top-down only, never event-driven
+    escalation: operator
 
-    success_criteria:
-      - All stories assigned to agents/terminals
-      - No unresolved conflicts
-      - Parallel work coordinated
-      - Progress tracked in execution-status.yaml
-
-    escalation: operator  # Always escalates to operator, never to another agent
-
-  resource-allocator:
-    name: Resource Allocator
-    role: Capacity Planning & Load Balancing
-    layer: strategic
-    location: .system/agents/strategic/resource-allocator.md
+  pm:
+    name: Product Manager
+    role: Product Requirements & Prioritization
+    location: .system/agents/pm.md
 
     specializations:
-      - Terminal capacity planning
-      - Story batching optimization
-      - Load balancing across terminals
-      - Throughput prediction
-      - Resource utilization analysis
-
-    skills_access:
-      - sprint-batch-analyzer # Dependency graphs
-      - parallel-coordinator  # Session tracking
-      - decision-support      # Complexity assessment
+      - Product requirements definition
+      - Feature prioritization
+      - Stakeholder communication
+      - Story acceptance criteria
 
     execution_modes:
-      - advisory  # Returns recommendations to orchestrator-exe
+      - collaborative            # Works with operator
 
-    invocation: orchestrator_request  # Called by orchestrator-exe only
+    escalation: orc-exe
 
-    success_criteria:
-      - Optimal batch sizes recommended
-      - Balanced workload distribution
-      - Dependency conflicts avoided
-      - Realistic capacity estimates
-
-    escalation: orchestrator-exe
-
-# ==============================================================================
-# TACTICAL LAYER AGENTS - Execution specialists for specific workflows
-# ==============================================================================
-
-tactical:
-  integration-manager:
-    name: Integration Manager
-    role: Component Lifecycle & MCP Coordination
-    layer: tactical
-    location: .system/agents/tactical/integration-manager.md
+  architect:
+    name: Architect
+    role: System Design & Technical Decisions
+    location: .system/agents/architect.md
 
     specializations:
-      - Component sharding and extraction
-      - Injection marker creation
-      - CSS namespace validation
-      - MCP conflict detection
-      - Component integration workflow
-
-    skills_access:
-      - component-integration  # Production injection
-      - contract-orchestrator  # YAML contract handling
-      - environment-check      # MCP validation
-      - progress-reporter      # Status updates
+      - System architecture design
+      - Technical decision making
+      - Component structure planning
+      - Integration patterns
 
     execution_modes:
-      - autonomous  # Can run fully autonomous with escalation
-      - supervised  # Operator approval at checkpoints
+      - collaborative
 
-    invocation: event_driven  # Triggered by integration_ready event
+    escalation: orc-exe
 
-    task_types:
-      - component-integration
-      - prototype_sharding
-      - css_namespace_enforcement
-      - injection_marker_creation
-
-    success_criteria:
-      - No CSS/JS conflicts detected by MCP
-      - Injection markers properly created
-      - Component registered in MCP
-      - Integration tests passing
-
-    escalation: orchestrator-exe
-
-  validation-controller:
-    name: Validation Controller
-    role: Progressive Validation Orchestration
-    layer: tactical
-    location: .system/agents/tactical/validation-controller.md
+  sm:
+    name: Scrum Master
+    role: Sprint Planning & Process Facilitation
+    location: .system/agents/sm.md
 
     specializations:
-      - Multi-level validation coordination
-      - Quality gate enforcement
-      - Validation failure handling
-      - Retry logic and recovery
-
-    skills_access:
-      - component-validation  # 4-level validation
-      - sandbox-testing       # Isolated testing
-      - progress-reporter     # Event emission
+      - Sprint planning
+      - Story breakdown
+      - Process facilitation
+      - Impediment removal
 
     execution_modes:
-      - fully_autonomous  # Runs all 4 levels automatically
+      - collaborative
 
-    invocation: event_driven  # Triggered by component_extracted or contract_created
+    escalation: orc-exe
 
-    task_types:
-      - component-validation
-      - quality_gate_enforcement
-      - test_execution
-      - contract_compliance_check
-
-    validation_levels:
-      1: syntax_check      # HTML/CSS/JS validity
-      2: unit_tests        # Test execution
-      3: contract_compliance # API/interface verification
-      4: integration_safety  # MCP conflict detection
-
-    success_criteria:
-      - All 4 validation levels passed
-      - Test coverage adequate
-      - Contract compliance verified
-      - No integration conflicts
-
-    escalation: integration-manager  # Or orchestrator-exe if critical
-
-  development-executor:
-    name: Development Executor
-    role: Story Implementation Wrapper
-    layer: tactical
-    location: .system/agents/tactical/development-executor.md
+  dev-base:
+    name: Developer (Base)
+    role: Core Development Capabilities
+    location: .system/agents/dev-base.md
 
     specializations:
-      - Story task breakdown
-      - Code generation
+      - Code implementation
       - Test writing
-      - Implementation coordination
+      - Bug fixing
+      - Refactoring
 
-    skills_access:
-      - All BMAD dev workflows  # Wraps existing dev workflows
-      - progress-reporter       # Status tracking
-      - event-system            # Event emission
+    note: Extended by pass-specific variants
 
     execution_modes:
-      - manual       # Operator-guided development
-      - autonomous   # For clear, well-defined stories
+      - manual
+      - autonomous
 
-    invocation: orchestrator_assignment  # Assigned by orchestrator-exe
+    escalation: orc-exe
 
-    task_types:
-      - story_implementation
-      - feature_development
-      - bug_fixing
-      - refactoring
-
-    success_criteria:
-      - All acceptance criteria met
-      - Tests written and passing
-      - Code reviewed (if required)
-      - Story marked as done
-
-    escalation: orchestrator-exe
-
-# ==============================================================================
-# SUPPORT LAYER AGENTS - Specialized analysis and generation
-# ==============================================================================
-
-support:
-  contract-architect:
-    name: Contract Architect
-    role: Interface Definition & Contract Generation
-    layer: support
-    location: .system/agents/support/contract-architect.md
+  dev-first-pass:
+    name: Developer (First Pass)
+    role: Rapid Feature Implementation
+    location: .system/agents/dev-first-pass.md
+    extends: dev-base
 
     specializations:
-      - API surface extraction
-      - Interface definition
-      - Contract markdown generation
-      - Markdown to YAML conversion
-      - Namespace enforcement rules
+      - Rapid prototyping
+      - Feature scaffolding
+      - Contract stub generation
+      - Happy path implementation
 
-    skills_access:
-      - contract-creation      # Contract generation
-      - contract-orchestrator  # YAML conversion
-      - component-validation   # Contract compliance checking
+    pass: 1
+    focus: speed_over_perfection
 
     execution_modes:
-      - autonomous  # Fully automatic contract generation
+      - autonomous
 
-    invocation: event_driven  # Triggered by component_extracted
+    escalation: orc-exe
 
-    task_types:
-      - contract_generation
-      - interface_definition
-      - api_documentation
-      - namespace_specification
-
-    success_criteria:
-      - Contract accurately reflects component
-      - CSS namespace rules defined
-      - JS API surface documented
-      - Dependencies identified
-      - YAML contract generated
-
-    escalation: validation-controller
-
-  dependency-analyst:
-    name: Dependency Analyst
-    role: Dependency Graph Construction & Sequencing
-    layer: support
-    location: .system/agents/support/dependency-analyst.md
+  dev-second-pass:
+    name: Developer (Second Pass)
+    role: Polish & Edge Cases
+    location: .system/agents/dev-second-pass.md
+    extends: dev-base
 
     specializations:
-      - Dependency graph construction
-      - Conflict detection
-      - Critical path analysis
-      - Sequencing recommendations
-      - Parallel opportunity identification
+      - Edge case handling
+      - Error handling
+      - Performance optimization
+      - Code cleanup
 
-    skills_access:
-      - sprint-batch-analyzer  # Graph construction
-      - parallel-coordinator   # Conflict detection
-      - decision-support       # Risk assessment
+    pass: 2
+    focus: completeness
 
     execution_modes:
-      - advisory  # Returns analysis to orchestrator-exe
+      - autonomous
 
-    invocation: orchestrator_request  # Called when needed
+    escalation: orc-exe
 
-    task_types:
-      - dependency_analysis
-      - sequencing_optimization
-      - conflict_detection
-      - parallel_opportunity_identification
-
-    success_criteria:
-      - Complete dependency graph created
-      - All conflicts identified
-      - Critical path identified
-      - Parallel batches recommended
-
-    escalation: resource-allocator  # Or orchestrator-exe
-
-  testing-specialist:
-    name: Testing Specialist
-    role: Test Automation & Sandbox Validation
-    layer: support
-    location: .system/agents/support/testing-specialist.md
+  dev-third-pass:
+    name: Developer (Third Pass)
+    role: Integration & Finalization
+    location: .system/agents/dev-third-pass.md
+    extends: dev-base
 
     specializations:
-      - Sandbox environment creation
-      - Test generation
-      - Visual validation
-      - Proof-of-work validation
-      - Auto-approval logic
+      - Cross-component integration
+      - Final validation
+      - Production readiness
+      - Contract verification
 
-    skills_access:
-      - sandbox-testing        # Sandbox creation and testing
-      - component-validation   # Test execution
-      - progress-reporter      # Event emission
+    pass: 3
+    focus: integration_stability
 
     execution_modes:
-      - fully_autonomous  # Auto-approves if tests pass
+      - supervised
 
-    invocation: event_driven  # Triggered by validation_level_2_required
-
-    task_types:
-      - test_generation
-      - sandbox-testing
-      - visual_validation
-      - proof_validation
-
-    success_criteria:
-      - Sandbox environment created
-      - Tests generated and passing
-      - Visual validation complete
-      - Component ready for integration
-
-    escalation: validation-controller
+    escalation: orc-exe
 
 # ==============================================================================
 # TASK TYPE TO AGENT MAPPINGS
-# Used by agent-selector skill to recommend optimal agent for task
+# Simplified mappings for flat agent structure
 # ==============================================================================
 
 task_mappings:
-  # Component lifecycle tasks
-  component-integration:
-    primary: integration-manager
-    support: [contract-architect, validation-controller]
+  # Development tasks by pass
+  first_pass_implementation:
+    primary: dev-first-pass
     mode: autonomous
 
-  component-validation:
-    primary: validation-controller
-    support: [testing-specialist, contract-architect]
-    mode: fully_autonomous
+  second_pass_polish:
+    primary: dev-second-pass
+    mode: autonomous
 
-  prototype_sharding:
-    primary: integration-manager
-    support: [contract-architect]
+  third_pass_integration:
+    primary: dev-third-pass
     mode: supervised
 
-  # Development tasks
+  # General development
   story_implementation:
-    primary: development-executor
-    support: [dependency-analyst]
-    mode: manual  # Default, can be autonomous for simple stories
-
-  feature_development:
-    primary: development-executor
-    support: [contract-architect, testing-specialist]
+    primary: dev-base
     mode: manual
 
   bug_fixing:
-    primary: development-executor
-    support: []
-    mode: autonomous  # Clear fixes can be autonomous
+    primary: dev-base
+    mode: autonomous
 
   refactoring:
-    primary: development-executor
-    support: [dependency-analyst]
+    primary: dev-base
     mode: manual
 
-  # Planning and analysis tasks
-  dependency_analysis:
-    primary: dependency-analyst
-    support: [resource-allocator]
-    mode: advisory
+  # Planning tasks
+  requirements_definition:
+    primary: pm
+    mode: collaborative
 
-  capacity_planning:
-    primary: resource-allocator
-    support: [dependency-analyst]
-    mode: advisory
+  architecture_design:
+    primary: architect
+    mode: collaborative
 
-  sprint_batch_planning:
-    primary: resource-allocator
-    support: [dependency-analyst]
-    mode: advisory
+  sprint_planning:
+    primary: sm
+    mode: collaborative
 
-  # Testing tasks
-  test_generation:
-    primary: testing-specialist
-    support: [development-executor]
-    mode: autonomous
-
-  sandbox-testing:
-    primary: testing-specialist
-    support: []
-    mode: fully_autonomous
-
-  # Contract and interface tasks
-  contract_generation:
-    primary: contract-architect
-    support: []
-    mode: autonomous
-
-  interface_definition:
-    primary: contract-architect
-    support: [dependency-analyst]
-    mode: autonomous
-
-  # Coordination tasks (orchestrator-exe only)
+  # Coordination tasks
   sprint_execution:
-    primary: orchestrator-exe
-    support: [resource-allocator, dependency-analyst]
+    primary: orc-exe
     mode: manual_coordination
 
   parallel_work_coordination:
-    primary: orchestrator-exe
-    support: [resource-allocator]
+    primary: orc-exe
     mode: autonomous_delegation
-
-# ==============================================================================
-# AGENT SELECTION SCORING CRITERIA
-# Multi-criteria decision matrix for agent selection
-# ==============================================================================
-
-selection_criteria:
-  task_type_match:
-    weight: 0.35
-    description: How well agent specialization matches task type
-
-  complexity_handling:
-    weight: 0.25
-    description: Agent's ability to handle task complexity level
-
-  execution_mode_fit:
-    weight: 0.20
-    description: Whether task requires manual, supervised, or autonomous
-
-  skill_access:
-    weight: 0.15
-    description: Agent has access to required skills
-
-  current_availability:
-    weight: 0.05
-    description: Agent not already assigned to another terminal
-
-  pass_awareness:
-    weight: 0.05  # Added for three-pass system
-    description: Agent's effectiveness in current pass (1st/2nd/3rd)
 
 # ==============================================================================
 # EXECUTION MODE DEFINITIONS
@@ -451,80 +225,42 @@ execution_modes:
   manual:
     description: Operator drives all decisions, agent assists
     auto_approval: false
-    checkpoint_frequency: high
     escalation: immediate
 
+  collaborative:
+    description: Agent and operator work together
+    auto_approval: false
+    escalation: at_decision_points
+
   supervised:
-    description: Agent executes with operator approval at key checkpoints
+    description: Agent executes with operator approval at checkpoints
     auto_approval: conditional
-    checkpoint_frequency: medium
     escalation: at_checkpoints
 
   autonomous:
     description: Agent executes fully, escalates only on failure
     auto_approval: true
-    checkpoint_frequency: low
     escalation: on_failure
 
-  fully_autonomous:
-    description: Agent executes end-to-end with no operator interaction
+  manual_coordination:
+    description: Orchestrator coordinates with operator control
+    auto_approval: false
+    escalation: operator_decision
+
+  autonomous_delegation:
+    description: Orchestrator auto-assigns work to agents
     auto_approval: true
-    checkpoint_frequency: none
-    escalation: critical_only
-
-  advisory:
-    description: Agent returns recommendations, no execution
-    auto_approval: n/a
-    checkpoint_frequency: n/a
-    escalation: n/a
-
-# ==============================================================================
-# BMAD AGENTS (Reference Only - Not Modified)
-# Listed for orchestrator awareness when delegating to BMAD workflows
-# ==============================================================================
-
-bmad_reference:
-  pm:
-    location: .claude/commands/bmad/bmm/agents/pm.md
-    role: Product management
-
-  architect:
-    location: .claude/commands/bmad/bmm/agents/architect.md
-    role: System architecture design
-
-  dev:
-    location: .claude/commands/bmad/bmm/agents/dev.md
-    role: Development execution (wrapped by development-executor)
-
-  sm:
-    location: .claude/commands/bmad/bmm/agents/sm.md
-    role: Scrum master / sprint planning
-
-  tea:
-    location: .claude/commands/bmad/bmm/agents/tea.md
-    role: Test engineer (wrapped by testing-specialist)
-
-  tech-writer:
-    location: .claude/commands/bmad/bmm/agents/tech-writer.md
-    role: Documentation
-
-  ux-designer:
-    location: .claude/commands/bmad/bmm/agents/ux-designer.md
-    role: User experience design
-
-  analyst:
-    location: .claude/commands/bmad/bmm/agents/analyst.md
-    role: Business analysis
+    escalation: on_conflict
 
 # ==============================================================================
 # NOTES
 # ==============================================================================
 
 notes: |
-  - Orchestrator-EXE is the only agent that uses direct invocation (top-down control)
-  - All other agents can be event-driven or orchestrator-assigned
-  - BMAD agents remain in their current location, new specialized agents wrap or extend them
-  - Agent selection is automatic but operator can override
-  - Execution modes can be overridden by orchestrator based on risk assessment
-  - Support layer agents are typically advisory or fully autonomous
-  - Strategic layer agents coordinate, tactical layer agents execute
+  v2.0.0 Changes:
+  - Flattened agent hierarchy (removed strategic/tactical/support layers)
+  - Deleted: resource-allocator, integration-manager, validation-controller,
+    development-executor, contract-architect, dependency-analyst, testing-specialist
+  - These capabilities are now integrated into orc-exe and the three-pass dev system
+  - Pass-specific dev agents (first/second/third) handle different execution phases
+  - orc-exe handles all coordination, contracts, and validation

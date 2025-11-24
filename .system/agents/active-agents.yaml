@@ -1,6 +1,6 @@
 # Active Agents Registry
 # Tracks which agents are currently running in which terminals
-# Updated in real-time by orchestrator-exe and agents
+# Updated in real-time by orc-exe and agents
 
 version: 1.0.0
 last_updated: null
@@ -34,7 +34,7 @@ terminals:
 utilization:
   # Tracks how many times each agent has been assigned
   # Updated by orchestrator when assigning agents
-  orchestrator-exe: 0
+  orc-exe: 0
   resource-allocator: 0
   integration-manager: 0
   validation-controller: 0
@@ -46,6 +46,6 @@ utilization:
 # Notes
 notes: |
   - This file is updated in real-time as agents are assigned and complete work
-  - Orchestrator-exe reads this file to prevent double-assigning agents
+  - orc-exe reads this file to prevent double-assigning agents
   - Terminal IDs should match those in .system/parallel-work/active-sessions.yaml
   - Status values: running, waiting_approval, paused, completed, failed

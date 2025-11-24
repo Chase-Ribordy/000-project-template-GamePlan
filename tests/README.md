@@ -600,22 +600,11 @@ Follow TDD workflow:
 
 ## Resources
 
-### Testing Architecture Patterns
-
-See `.bmad/bmm/testarch/` for comprehensive testing patterns:
-- API testing patterns
-- Component testing patterns
-- Integration testing patterns
-- E2E testing patterns
-- Performance testing patterns
-- Security testing patterns
-
 ### Documentation
 
 - **Quality-First Workflow:** `.system/template/README-STRUCTURE.md`
 - **Component Validation:** `.system/validation/README.md`
 - **Autonomous Execution:** `.system/README-AUTONOMOUS.md`
-- **BMAD Testing Docs:** `.bmad/bmm/testarch/`
 
 ## Summary
 

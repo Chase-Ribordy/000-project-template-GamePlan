@@ -27,17 +27,12 @@ Quick reference for when to use which commands during development. These phases 
 
 **Goal**: Define what you're building
 
-### Use BMAD Workflows
-Located in `.claude/commands/bmad/` - these handle full planning lifecycle:
-
 **Start with one of these**:
-- `/brainstorm-project` - Structured ideation
-- `/product-brief` - Quick product vision
+- `/prd` - Product requirements
+- `/architect` - System design
 
 **Then progress through**:
-- `/prd` - Product requirements
-- `/architecture` - System design
-- `/create-epics-and-stories` - Sprint backlog
+- `/sm` - Create epics and stories
 
 **Output**: Requirements docs, architecture, epic/story files
 
@@ -53,7 +48,7 @@ Located in `.claude/commands/bmad/` - these handle full planning lifecycle:
 
 #### Pass 1: Backend-First (Get It Working)
 Focus on functionality, minimal frontend
-- Use BMAD `/dev-story` for backend features
+- Use `/dev-story` for backend features
 - Basic HTML structure, minimal CSS
 - **Goal**: Features work, not pretty yet
 
@@ -105,13 +100,9 @@ Final cleanup and optimization
 **Goal**: Document, reflect, prepare for next session
 
 ### Essential Commands
-- **`/next-steps`** - Session handoff documentation
+- **`/handoff`** - Session handoff documentation
   - **When**: End of every work session
   - **Creates**: Context for next session (what was done, what's next, blockers)
-
-### BMAD Workflows
-- `/retrospective` - Sprint retrospective (after epic/sprint complete)
-- `/document-project` - Generate project documentation
 
 **Time**: 30 mins - 1 hour
 
@@ -122,21 +113,20 @@ Final cleanup and optimization
 ### By Frequency of Use
 
 **Daily/Session**:
-- `/checklist` (start of session)
-- `/next-steps` (end of session)
+- `/orc-exe` (start of session)
+- `/handoff` (end of session)
 
 **Per Feature/Component**:
-- `/integrate` (shard large files)
+- `/dev-story` (implement features)
 - `/debug-css` (fix styling)
 - `/quick-fix` (fix bugs)
 - `/improve` (creative solutions)
 
 **Per Sprint**:
-- BMAD planning workflows (`/prd`, `/architecture`, `/create-epics-and-stories`)
-- `/retrospective` (end of sprint)
+- Planning workflows (`/prd`, `/architect`, `/sm`)
 
 **One-Time**:
-- `/integrate-mcp` (first project setup)
+- Initial project setup
 
 ---
 
@@ -145,13 +135,13 @@ Final cleanup and optimization
 ### Essential (Learn These First)
 Core commands you'll use on every project:
 
-1. **`/checklist`** - Environment validation & setup
-2. **`/integrate`** - Shard large files
+1. **`/orc-exe`** - Orchestrator for coordination
+2. **`/dev-story`** - Implement features
 3. **`/debug-css`** - Fix styling issues
 4. **`/quick-fix`** - Fix bugs
-5. **`/next-steps`** - Session handoff
-6. **BMAD `/prd`** - Requirements
-7. **BMAD `/architecture`** - Design
+5. **`/handoff`** - Session handoff
+6. **`/prd`** - Requirements
+7. **`/architect`** - Design
 
 ### Optional/Advanced
 Useful but not required for every project:
@@ -160,7 +150,6 @@ Useful but not required for every project:
 - `/define-contract` - Contract-first development (future: skill)
 - `/validate-component` - Quality gates (future: skill)
 - `/prove-it-works` - Sandbox testing (future: skill)
-- All other BMAD workflows (domain research, UX design, etc.)
 
 ---
 
@@ -168,18 +157,18 @@ Useful but not required for every project:
 
 ```
 Day 1: Setup
-└─ /checklist → Environment ready ✓
+└─ /orc-exe → Orchestrator guides you ✓
 
 Day 1-2: Planning
-└─ /prd → /architecture → /create-epics-and-stories → Backlog ready ✓
+└─ /prd → /architect → /sm → Backlog ready ✓
 
 Week 1-3: Execution (flexible passes)
-├─ Pass 1: Build backend (BMAD /dev-story)
-├─ Pass 2: Build components (/integrate prototypes)
+├─ Pass 1: Build backend (/dev-story)
+├─ Pass 2: Polish components
 └─ Pass 3: Debug & polish (/debug-css, /quick-fix, /improve)
 
 End of Sprint: Wrap-Up
-└─ /next-steps → /retrospective → Session documented ✓
+└─ /handoff → Session documented ✓
 ```
 
 ---

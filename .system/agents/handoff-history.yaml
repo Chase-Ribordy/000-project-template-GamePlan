@@ -57,12 +57,12 @@ patterns:
   component_lifecycle:
     - contract-architect → validation-controller
     - validation-controller → integration-manager
-    - integration-manager → orchestrator-exe (completion report)
+    - integration-manager → orc-exe (completion report)
 
   story_implementation:
     - development-executor → testing-specialist
     - testing-specialist → validation-controller
-    - validation-controller → orchestrator-exe (completion report)
+    - validation-controller → orc-exe (completion report)
 
 # Statistics
 statistics:
@@ -79,6 +79,6 @@ statistics:
 notes: |
   - Handoffs are contract-based: clear inputs, outputs, acceptance criteria
   - Event-driven handoffs are automatic, orchestrator/agent-request are manual
-  - Failed handoffs should escalate to orchestrator-exe
+  - Failed handoffs should escalate to orc-exe
   - Patterns help predict workflow bottlenecks
   - Active handoffs are moved to history upon completion

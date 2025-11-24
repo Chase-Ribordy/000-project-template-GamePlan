@@ -94,7 +94,7 @@ After Claude Code starts:
 
 **Quality-First Project Template** with **Autonomous Execution System** for building high-quality web applications with Claude Code.
 
-- **Development methodology**: BMAD (Build, Measure, Adapt, Deploy) + Autonomous Component Integration
+- **Development methodology**: Three-pass build system with orchestrator coordination
 - **Testing framework**: Jest with parallel execution (50% CPU core usage)
 - **Coverage targets**: 80% across branches, functions, lines, statements
 - **Validation approach**: Progressive 4-level validation with contract-first development
@@ -103,16 +103,16 @@ After Claude Code starts:
 
 The project follows a **three-pass development model** that separates concerns and ensures quality at each stage:
 
-### Pass 1: Backend Development (BMAD)
-**Tools**: `/dev-story`, BMAD workflows
+### Pass 1: Backend Development
+**Tools**: `/dev-story`, planning workflows
 
 **Purpose**: Core functionality, data layer, business logic
 
 **Output**: Tested backend components with 80% coverage
 
 **Workflow**:
-1. Planning phase: `/pm` (product manager), `/architect` (technical design)
-2. Story creation: `/create-epics-and-stories`
+1. Planning phase: `/prd` (product requirements), `/architect` (technical design)
+2. Story creation: `/sm` (scrum master creates epics and stories)
 3. Development: `/dev-story` (implements with tests)
 4. Quality gates: Unit tests, coverage requirements
 
@@ -218,7 +218,6 @@ Skills are configured in `.claude/skills/trigger-matrix.yaml`:
 - `.system/scripts/` - Build automation
 - `.system/validation/` - Quality gate scripts
 - `.system/mcp-servers/` - Component registry server for conflict detection
-- `.bmad/` - BMAD methodology workflows
 - `.claude/` - Claude Code configuration (agents, commands, skills)
 
 ### Build Output (Git-Ignored)
@@ -279,17 +278,17 @@ Records all events emitted during autonomous execution for debugging and auditin
 
 ## Key Workflows
 
-### Planning & Backend Development (BMAD)
+### Planning & Backend Development
 
 ```bash
-# Step 1: Product planning
-/pm
+# Step 1: Product requirements
+/prd
 
 # Step 2: Technical architecture
 /architect
 
 # Step 3: Create epics and stories
-/create-epics-and-stories
+/sm
 
 # Step 4: Develop story with tests
 /dev-story
@@ -321,12 +320,11 @@ Records all events emitted during autonomous execution for debugging and auditin
 
 ## Quick Command Reference
 
-### BMAD Workflows
-- `/pm` - Product manager (PRD creation)
+### Planning Workflows
+- `/prd` - Product requirements document
 - `/architect` - Technical architecture
-- `/create-epics-and-stories` - Break down PRD into deliverables
+- `/sm` - Scrum master (epics and stories)
 - `/dev-story` - Implement story with tests
-- `/code-review` - Senior developer review
 
 ### Component Integration
 - `/integrate` - Extract and integrate Claude Chat prototype
@@ -338,7 +336,7 @@ Records all events emitted during autonomous execution for debugging and auditin
 - `/improve` - Code improvements and refactoring
 
 ### Orchestration
-- `/orchestrator-exe` - Advanced parallel orchestration (up to 8 terminals)
+- `/orc-exe` - Advanced parallel orchestration (up to 8 terminals)
 
 ### Project Status
 - Check `.system/execution-status.yaml` for current pass and progress

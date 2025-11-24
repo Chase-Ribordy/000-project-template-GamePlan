@@ -21,7 +21,7 @@ sessions:
       - "Task description 2"
     status: "in_progress" # pending, in_progress, completed, blocked
     current_file: "src/services/example.service.ts" # Current working file
-    agent: "dev" # BMAD agent being used
+    agent: "dev" # Agent being used
     started: "2025-11-15T10:00:00Z"
     last_update: "2025-11-15T10:30:00Z"
     blocked_by: [] # List of terminal IDs blocking this work
@@ -72,7 +72,7 @@ coordination:
 # (Use active-sessions.yaml for this - see dependencies-template.yaml)
 
 # Metadata
-created_by: "orchestrator-exe"
+created_by: "orc-exe"
 last_sync: "2025-11-15T10:30:00Z"
 sync_frequency: "5m" # How often to sync status
 
@@ -83,7 +83,7 @@ notes: |
 
   Example: story-1-2-sessions.yaml
 
-  Orchestrator-EXE will read this file to:
+  ORC-EXE will read this file to:
   - Display parallel work status
   - Detect conflicts
   - Recommend merge points

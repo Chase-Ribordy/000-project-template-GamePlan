@@ -1,5 +1,5 @@
 # Agent Assignment History
-# Tracks all agent assignment decisions made by orchestrator-exe
+# Tracks all agent assignment decisions made by orc-exe
 # Used for learning and optimization of future assignments
 
 version: 1.0.0
@@ -45,7 +45,7 @@ statistics:
   escalated: 0
 
   by_agent:
-    orchestrator-exe: {assigned: 0, success: 0, failed: 0}
+    orc-exe: {assigned: 0, success: 0, failed: 0}
     resource-allocator: {assigned: 0, success: 0, failed: 0}
     integration-manager: {assigned: 0, success: 0, failed: 0}
     validation-controller: {assigned: 0, success: 0, failed: 0}

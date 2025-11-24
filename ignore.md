@@ -1,88 +1,189 @@
-# Files to Remove When Converting to Clean Template
+# Cleanup Notes: Development → Production Template
 
-This document lists all temporary build files, diagnostic files, and planning artifacts that should be removed when converting this project into a clean template for distribution.
+This document tracks all files to delete when creating the clean production template.
 
-## Build Logs (17 files)
+**Current Branch:** Development (messy, with tests and artifacts)
+**Target:** Clean template on main/production branch
 
-All files in `.system/template/build-logs/`:
+---
 
-- `BATCH_1_2_COMPLETE.md`
-- `CLAUDE_CHAT_REVIEW_ADDRESSED.md`
-- `CLEANUP_TERMINAL_1.md`
-- `CLEANUP_TERMINAL_2.md`
-- `CLEANUP_TERMINAL_3.md`
-- `MCP_SERVER_ENHANCED.js`
-- `PARALLEL_EXECUTION_MASTER.md`
-- `PARALLEL_PROMPTS.md`
-- `PARALLEL_PROMPTS_BATCH3.md`
-- `PARALLEL_PROMPTS_QUALITY.md`
-- `README.md`
-- `reorganization/` (directory with contents)
-- `SIMPLE_START.md`
-- `TERMINAL_1_REORGANIZE_COMMANDS.md`
-- `TERMINAL_2_CREATE_SKILLS.md`
-- `TERMINAL_3_ENHANCE_CHECKLIST.md`
-- `TERMINAL_4_DOCUMENTATION_UPDATES.md`
+## PHASE 1: Development Artifacts (Delete First)
 
-## MCP Server Diagnostics
+### Build Logs (17 files) - `.system/template/build-logs/`
+```
+.system/template/build-logs/
+├── BATCH_1_2_COMPLETE.md
+├── CLAUDE_CHAT_REVIEW_ADDRESSED.md
+├── CLEANUP_TERMINAL_1.md
+├── CLEANUP_TERMINAL_2.md
+├── CLEANUP_TERMINAL_3.md
+├── MCP_SERVER_ENHANCED.js
+├── PARALLEL_EXECUTION_MASTER.md
+├── PARALLEL_PROMPTS.md
+├── PARALLEL_PROMPTS_BATCH3.md
+├── PARALLEL_PROMPTS_QUALITY.md
+├── README.md
+├── SIMPLE_START.md
+├── TERMINAL_1_REORGANIZE_COMMANDS.md
+├── TERMINAL_2_CREATE_SKILLS.md
+├── TERMINAL_3_ENHANCE_CHECKLIST.md
+├── TERMINAL_4_DOCUMENTATION_UPDATES.md
+└── reorganization/  (entire directory)
+```
 
-- `.system/mcp-servers/DIAGNOSTIC.md`
-- `.system/mcp-servers/SUCCESS.md`
+### MCP Server Diagnostics
+```
+.system/mcp-servers/DIAGNOSTIC.md
+.system/mcp-servers/SUCCESS.md
+```
 
-## Planning and Validation Files
+### Planning Artifacts
+```
+.system/template/planning-notes.md
+.system/template/README-VALIDATION.md
+```
 
-- `.system/template/planning-notes.md`
-- `.system/template/README-VALIDATION.md`
+### User-Specific Config
+```
+.claude/settings.local.json  (keep .local.example.json)
+```
 
-## Runtime Files Pattern
+---
 
-Remove all runtime files matching these patterns in `.system/`:
+## PHASE 2: Test Files (Delete for Production)
 
-- `*.json` (except configuration files needed for template)
-- `*.log`
-- Any execution status files
-- Event logs
+### Test Infrastructure
+```
+tests/                              # Entire folder
+├── setup.js
+├── README.md
+├── jest.config.js
+├── run-parallel.js
+├── run-all-parallel.js
+├── terminal-*.sh                   # 6 terminal scripts
+├── unit/
+├── integration/
+├── fixtures/
+├── utils/
+└── orc-exe/
+```
 
-Specific files to check:
-- `.system/execution-status.yaml` (if present)
-- `.system/events/event-log.yaml` (if present)
-- Any `*.log` files in `.system/` subdirectories
+### Test Configuration
+```
+jest.config.js                      # Root level
+package.json                        # Remove test scripts (keep package.json)
+```
 
-## Clean Template Checklist
+---
 
-Before distribution, ensure:
+## PHASE 3: Runtime/Generated Files (Reset for Clean State)
 
-1. [ ] All 17 build-log files removed
-2. [ ] MCP diagnostic files removed (DIAGNOSTIC.md, SUCCESS.md)
-3. [ ] Planning artifacts removed (planning-notes.md, README-VALIDATION.md)
-4. [ ] Runtime files cleaned (*.json, *.log in .system/)
-5. [ ] Execution status files removed
-6. [ ] Event logs cleared
-7. [ ] Example components remain intact (keep for reference)
-8. [ ] Documentation files remain (README-QUICKSTART.md, etc.)
-9. [ ] Template structure preserved (.system/boilerplate/, etc.)
-10. [ ] Slash commands working (/checklist, /integrate, etc.)
+### Execution Tracking (Reset to empty state)
+```
+.system/execution-status.yaml       # Reset to template state
+.system/events/event-log.yaml       # Reset to empty events
+```
 
-## Files to Keep
+### Any Generated Logs
+```
+.system/**/*.log                    # Any .log files
+.system/**/*.json                   # Generated JSON (not config)
+```
 
-These should remain in the template:
+### Parallel Work State
+```
+.system/parallel-work/session_*.yaml
+.system/parallel-work/dependencies_*.yaml
+.system/parallel-work/coordination-log-*.yaml
+.system/review-queue.yaml
+.system/pass-history.yaml
+```
 
-- `.system/template/README-QUICKSTART.md`
-- `.system/template/mcp-setup.md`
-- `.system/template/README-STRUCTURE.md`
-- `.system/template/integration-workflow.md`
-- `.system/README.md` (main infrastructure documentation)
-- `.system/README-AUTONOMOUS.md`
-- `.system/components/example-button/` (full example)
-- All boilerplate templates
-- All validation scripts
-- MCP server core files (component-registry.js)
-- Slash command definitions (.bmad/, .claude/)
+### Agent State Files (Reset)
+```
+.system/agents/active-agents.yaml   # Reset to empty
+.system/agents/handoff-history.yaml # Reset to empty
+```
 
-## Automation Command (Future)
+---
 
-Consider creating a cleanup script:
+## PHASE 4: Test Documentation
+```
+TEST-WALKTHROUGH.md                 # End-to-end test guide
+TEST-PROMPT.md                      # Prompt for guided test
+ignore.md                           # Delete this file last
+```
 
+---
+
+## FILES ALREADY DELETED (This Session)
+
+These were deleted during documentation consolidation:
+```
+START_HERE.md                       # Redundant with README.md
+README-IMPLEMENTATION.md            # Redundant (too technical)
+docs/README-OPERATOR.md             # Redundant (now agent-facing)
+docs/README-WORKFLOW.md             # Redundant (consolidated)
+```
+
+---
+
+## ESSENTIAL FILES (Keep in Production Template)
+
+### Root Level
+```
+README.md                           # Human-facing guide
+package.json                        # Dependencies (remove test scripts)
+.gitignore                          # Git patterns
+```
+
+### Documentation
+```
+docs/
+├── README.md                       # Agent-facing
+├── orc-exe/               # Orchestrator docs
+├── TROUBLESHOOTING.md
+└── PARALLEL-TESTING-GUIDE.md       # Maybe remove?
+```
+
+### System Infrastructure
+```
+.system/
+├── README.md                       # Agent-facing
+├── README-AUTONOMOUS.md
+├── boilerplate/                    # Component templates
+├── contracts/                      # Contract system
+├── components/                     # Work-in-progress (empty)
+├── proven/                         # Validated (empty)
+├── sandbox/                        # Test harness
+├── agents/                         # Agent definitions
+├── mcp-servers/                    # MCP server (FUNCTIONAL)
+├── validation/                     # Quality gates
+├── events/                         # Event system (reset)
+└── template/                       # Setup docs (keep essential)
+```
+
+### Claude Configuration
+```
+.claude/
+├── config/                         # Settings (keep)
+├── commands/                       # Slash commands (keep all)
+├── skills/                         # Skills (keep all)
+└── agents/                         # Agent definitions (keep)
+```
+
+### Empty Directories (Keep Structure)
+```
+src/                                # Production code destination
+assets/                             # User assets
+references/                         # User prototypes
+```
+
+---
+
+## CLEANUP COMMANDS
+
+### Quick Cleanup (Development Artifacts Only)
 ```bash
 # Remove build logs
 rm -rf .system/template/build-logs/
@@ -95,15 +196,90 @@ rm -f .system/mcp-servers/SUCCESS.md
 rm -f .system/template/planning-notes.md
 rm -f .system/template/README-VALIDATION.md
 
-# Remove runtime files
-find .system -name "*.log" -type f -delete
-find .system -name "execution-status.yaml" -type f -delete
-find .system -name "event-log.yaml" -type f -delete
+# Remove user-specific config
+rm -f .claude/settings.local.json
+```
 
-# Verify template integrity
-/checklist
+### Full Production Cleanup
+```bash
+# All of the above, plus:
+
+# Remove tests
+rm -rf tests/
+rm -f jest.config.js
+
+# Reset runtime files
+# (Would need to restore to template state, not just delete)
+
+# Remove this file
+rm -f ignore.md
 ```
 
 ---
 
-**Note**: This file itself (ignore.md) should also be removed from the final clean template.
+## VERIFICATION CHECKLIST
+
+Before marking production branch ready:
+
+- [ ] All build-log files removed (17 files)
+- [ ] MCP diagnostic files removed
+- [ ] Planning artifacts removed
+- [ ] User config removed (.claude/settings.local.json)
+- [ ] Tests removed (entire tests/ folder)
+- [ ] Runtime files reset to template state
+- [ ] `/checklist` runs successfully
+- [ ] `/orc-exe` launches correctly
+- [ ] Example component intact (.system/components/example-button/)
+- [ ] MCP server starts (test with component-registry.js)
+- [ ] README.md reflects clean template usage
+- [ ] This file (ignore.md) removed
+
+---
+
+## BRANCHING STRATEGY
+
+```
+main (production)     ← Clean template, verified working
+    ↑
+    │ (merge after verification)
+    │
+staging               ← Minimal cleanup, testing passed
+    ↑
+    │ (merge after MCP/orchestrator tested)
+    │
+development           ← Current state (this branch)
+```
+
+### When to Create Branches
+1. **Now:** Stay on development, keep testing
+2. **After MCP verified:** Create staging with Phase 1 cleanup
+3. **After full test:** Create main with Phase 1-4 cleanup
+
+---
+
+## UNTESTED SYSTEMS (Verify Before Production)
+
+These systems exist but haven't been tested end-to-end:
+
+- [ ] MCP Server (`component-registry.js`)
+- [ ] `/orc-exe` full workflow
+- [ ] Component integration (`/integrate`)
+- [ ] Contract validation (4 levels)
+- [ ] Three-pass execution
+- [ ] Parallel work coordination
+
+**Test these BEFORE creating production branch.**
+
+---
+
+## NOTES
+
+- MCP server is FUNCTIONAL (not placeholder) - 8 implemented tools
+- Skills system is comprehensive (60+ skills)
+- Contracts-first approach is solid architecture
+- Build logs are purely diagnostic - safe to delete
+- Tests are well-structured but only needed for template development
+
+---
+
+**This file should be deleted in the final production template.**

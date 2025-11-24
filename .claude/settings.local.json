@@ -1,16 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(for file in \"START_HERE.md\" \"README-IMPLEMENTATION.md\" \"docs/README-OPERATOR.md\" \"docs/README-WORKFLOW.md\" \"docs/TROUBLESHOOTING.md\" \"docs/PARALLEL-TESTING-GUIDE.md\" \".system/README.md\" \".system/README-AUTONOMOUS.md\" \".system/agents/README.md\" \".claude/skills/event-system.md\" \".claude/skills/testing-with-jest.md\")",
-      "Bash(do if [ -f \"$file\" ])",
-      "Bash(then echo \"✓ $file\")",
-      "Bash(else echo \"❌ $file MISSING\")",
-      "Bash(fi)",
-      "Bash(done)"
+      "WebSearch",
+      "WebFetch(domain:www.npmjs.com)",
+      "mcp__component-registry__list_components",
+      "Bash(test:*)",
+      "Bash(nul)",
+      "Bash(for file in \".system/agents/handoff-history.yaml\" \".system/agents/agent-assignments.yaml\" \".claude/skills/orc-exe/track-parallel-work.md\" \".claude/skills/orc-exe/terminal-prompt-generator.md\" \".system/agents/agent-capabilities.yaml\" \".claude/skills/orc-exe/sprint-batch-analyzer.md\" \".claude/skills/orc-exe/pass-awareness-advisor.md\" \".claude/skills/orc-exe/parallel-status.md\")",
+      "Bash(do sed -i 's/orc-exe/orc-exe/g; s/ORC-EXE/ORC-EXE/g' \"$file\")",
+      "Bash(done)",
+      "Bash(for file in \".claude/skills/orc-exe/parallel-coordinator.md\" \".claude/skills/orc-exe/decision-support.md\" \".claude/skills/orc-exe/coordinate-agents.md\" \".claude/skills/orc-exe/contract-orchestrator.md\" \".claude/skills/orc-exe/agent-selector.md\")"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "component-registry"
+  ],
   "hooks": {
     "Stop": [
       {

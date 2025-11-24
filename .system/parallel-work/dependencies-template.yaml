@@ -1,6 +1,6 @@
 # Story Dependencies Template
 # Use this to manage story dependency graphs for parallel work coordination
-# Helps orchestrator-exe determine which stories can run in parallel
+# Helps orc-exe determine which stories can run in parallel
 
 # Project Information
 project_key: "jira-1234"
@@ -133,7 +133,7 @@ conflict_rules:
 # Active Sessions Tracking
 # Tracks which stories are currently being worked on across terminals
 active_sessions:
-  # Example session entries (populated by orchestrator-exe)
+  # Example session entries (populated by orc-exe)
   # terminal-1:
   #   story_id: "1-2-user-authentication"
   #   phase: "first-pass"
@@ -188,7 +188,7 @@ recommendations:
 
 # Metadata
 last_updated: "2025-11-15T10:00:00Z"
-updated_by: "orchestrator-exe"
+updated_by: "orc-exe"
 
 # Notes
 notes: |
@@ -200,7 +200,7 @@ notes: |
   3. Identify shared files and infrastructure
   4. Plan parallel work strategies
 
-  Orchestrator-EXE uses this to:
+  ORC-EXE uses this to:
   - Recommend which stories can run in parallel
   - Detect dependency violations
   - Suggest optimal terminal allocation

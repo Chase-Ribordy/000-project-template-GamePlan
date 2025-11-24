@@ -23,7 +23,7 @@ The agent system is designed to:
 ┌─────────────────────────────────────────────────────────┐
 │ STRATEGIC LAYER - Coordination & Planning               │
 ├─────────────────────────────────────────────────────────┤
-│ orchestrator-exe      Top-level sprint coordination     │
+│ orc-exe      Top-level sprint coordination     │
 │ resource-allocator    Capacity planning & load balance  │
 └─────────────────────────────────────────────────────────┘
                             │
@@ -79,7 +79,7 @@ Each agent has a comprehensive markdown definition:
 Agents are **personas** that Claude embodies when assigned a task.
 
 ### 3. Agent Selector Skill
-**File**: `.claude/skills/orchestrator-exe/agent-selector.md`
+**File**: `.claude/skills/orc-exe/agent-selector.md`
 
 The **brain** of automatic agent assignment:
 - Multi-criteria decision matrix
@@ -103,7 +103,7 @@ These files enable:
 ### Automatic Agent Assignment Flow
 
 ```
-1. Operator invokes /orchestrator-exe
+1. Operator invokes /orc-exe
    ↓
 2. Orchestrator identifies next task (story, integration, etc.)
    ↓
@@ -206,22 +206,6 @@ Execution:
 - No execution
 - **Use for**: Planning, dependency analysis, capacity planning
 
-## Integration with BMAD
-
-The agent system **extends** BMAD, not replaces it:
-
-**BMAD Agents** (existing):
-- Workflow-based (PM, Architect, Dev, SM, TEA, etc.)
-- Invoked via slash commands (/dev-story, /prd, etc.)
-- Remain in `.claude/commands/bmad/`
-
-**Specialized Agents** (new):
-- Task-based (Integration Manager, Validation Controller, etc.)
-- Assigned via agent-selector
-- Located in `.system/agents/`
-
-**Development-Executor Agent**: Wraps BMAD dev workflows, providing unified interface for orchestrator
-
 ## Contract-Based Handoffs
 
 Agents coordinate via **contracts** (YAML specifications):
@@ -265,7 +249,7 @@ Contracts ensure:
 ├── handoff-history.yaml (handoff tracking)
 │
 ├── strategic/
-│   ├── orchestrator-exe.md
+│   ├── orc-exe.md
 │   └── resource-allocator.md
 │
 ├── tactical/
@@ -285,7 +269,7 @@ Contracts ensure:
 
 **1. Invoke Orchestrator:**
 ```
-/orchestrator-exe
+/orc-exe
 ```
 
 **2. Orchestrator automatically:**
@@ -402,14 +386,13 @@ The system tracks:
 
 - **Agent Capabilities**: `agent-capabilities.yaml`
 - **Selection Guide**: `AGENT-SELECTION-GUIDE.md`
-- **Orchestrator Persona**: `strategic/orchestrator-exe.md`
-- **Agent Selector Skill**: `.claude/skills/orchestrator-exe/agent-selector.md`
+- **Orchestrator Persona**: `strategic/orc-exe.md`
+- **Agent Selector Skill**: `.claude/skills/orc-exe/agent-selector.md`
 
 ## Notes
 
-- Agent system is **opt-in** via orchestrator-exe
-- BMAD workflows continue to work independently
-- Agents can invoke BMAD workflows (e.g., development-executor wraps /dev-story)
+- Agent system is **opt-in** via orc-exe
+- Agents can invoke development workflows (e.g., development-executor wraps /dev-story)
 - System designed for **evolution** - add agents as needed
 - Performance improves over time as assignment history grows
 

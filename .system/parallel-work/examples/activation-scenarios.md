@@ -1,10 +1,10 @@
-# Orchestrator-EXE Activation Scenarios
+# ORC-EXE Activation Scenarios
 
-This document demonstrates complete end-to-end workflows showing how and when to activate orchestrator-exe, sample conversations, and decision-making scenarios.
+This document demonstrates complete end-to-end workflows showing how and when to activate orc-exe, sample conversations, and decision-making scenarios.
 
 ---
 
-## Scenario 1: Triggering Orchestrator-EXE After Sprint Planning
+## Scenario 1: Triggering ORC-EXE After Sprint Planning
 
 ### Context
 - **Epic**: 1-user-management (6 stories)
@@ -50,7 +50,7 @@ Sprint Planning Complete!
 
 Next Steps:
 1. Review sprint-status.yaml for story priorities
-2. Consider using /orchestrator-exe for parallel work coordination
+2. Consider using /orc-exe for parallel work coordination
 3. Begin development with /dev-story [story-id]
 ```
 
@@ -76,19 +76,19 @@ epics:
 **Operator Decision Point:**
 > "I have 6 stories totaling 12 hours. Some stories are independent. Should I work sequentially or use parallel coordination?"
 
-#### Step 3: Invoke Orchestrator-EXE
+#### Step 3: Invoke ORC-EXE
 
 **Operator activates orchestrator:**
 
 ```bash
-$ /orchestrator-exe
+$ /orc-exe
 ```
 
-**Orchestrator-EXE Agent Activation:**
+**ORC-EXE Agent Activation:**
 
 ```
 ═══════════════════════════════════════════════════════════════════════════════
-ORCHESTRATOR-EXE: Execution Phase Coordinator
+ORC-EXE: Execution Phase Coordinator
 ═══════════════════════════════════════════════════════════════════════════════
 Reading sprint-status.yaml...
 ✓ Found sprint: sprint_2025_week_3
@@ -229,10 +229,10 @@ I'll monitor coordination and notify you of conflicts or merge points.
 
 ### Workflow
 
-#### Step 1: Orchestrator-EXE Activation
+#### Step 1: ORC-EXE Activation
 
 ```bash
-$ /orchestrator-exe
+$ /orc-exe
 ```
 
 **Orchestrator Analysis:**
@@ -449,10 +449,10 @@ Ready for next wave or epic.
 #### Step 1: Orchestrator Recommendation
 
 ```bash
-$ /orchestrator-exe
+$ /orc-exe
 ```
 
-**Orchestrator Analysis:**
+**ORC-EXE Analysis:**
 
 ```
 Epic: 4-api-refactoring
@@ -597,10 +597,10 @@ Epic 4 COMPLETE!
 ### Workflow
 
 ```bash
-$ /orchestrator-exe
+$ /orc-exe
 ```
 
-**Orchestrator detects large story:**
+**ORC-EXE detects large story:**
 
 ```
 Large Story Detected: 3-5-dashboard-redesign

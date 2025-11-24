@@ -15,34 +15,15 @@ You are now in **IMPROVE MODE** - an exploratory workflow for creative problem-s
 
 ## WORKFLOW
 
-### STEP 0: LOAD CONFIGURATION
-
-<critical>MANDATORY: Load configuration BEFORE any other work</critical>
-
-```xml
-<action>Load {project-root}/.bmad/bmm/config.yaml</action>
-<action>Store session variables: {user_name}, {communication_language}, {output_folder}, {bmad_folder}</action>
-<check if="config not loaded">
-  <action>HALT: "Cannot proceed - config.yaml not found or unreadable"</action>
-</check>
-</critical>
-```
-
-**Story Context Detection:**
-- Check if currently working within a story (look for recent story files in context)
-- If story detected: Note story key for optional Dev Notes logging after improvement complete
-- DO NOT update story during improvement - only log to Dev Notes at the end if applicable
-
----
 
 ### STEP 1: GATHER OPEN-ENDED INPUT
 
-Ask {user_name} what needs improvement (can be vague):
+Ask the user what needs improvement (can be vague):
 
 ```
-🎨 IMPROVE MODE ACTIVATED
+IMPROVE MODE ACTIVATED
 
-Hey {user_name}, what needs improvement?
+What needs improvement?
 
 Describe what's bothering you (can be vague):
 - "This section doesn't look good"
@@ -301,27 +282,23 @@ Does this improvement work for you?
 
 <critical>
 ### DO NOT:
-- ❌ Present multiple options (too overwhelming) - pick ONE best solution
-- ❌ Implement before user approves the solution direction AND plan
-- ❌ Update stories, epics, or planning docs (except optional Dev Notes logging)
-- ❌ Update sprint-status.yaml
-- ❌ Run BMM workflows (workflow-status, sprint-planning, etc.)
-- ❌ Make changes outside the agreed scope
-- ❌ Guess what user wants - ask if unclear
+- Do not present multiple options (too overwhelming) - pick ONE best solution
+- Do not implement before user approves the solution direction AND plan
+- Do not update stories, epics, or planning docs
+- Do not update sprint-status.yaml
+- Do not make changes outside the agreed scope
+- Do not guess what user wants - ask if unclear
 
 ### DO:
-- ✅ Load config.yaml at step 0 (MANDATORY)
-- ✅ Use {user_name} and {communication_language} from config
-- ✅ Auto-discover files, then confirm with user
-- ✅ Read code thoroughly before recommending solution
-- ✅ Think critically about different approaches
-- ✅ Recommend ONE best solution with clear reasoning
-- ✅ Be honest about tradeoffs and effort
-- ✅ Provide file:line evidence for all changes
-- ✅ Move fast once direction is chosen
-- ✅ Stay focused on the improvement goal
-- ✅ Iterate based on feedback
-- ✅ Optionally log to story Dev Notes if story context detected
+- Auto-discover files, then confirm with user
+- Read code thoroughly before recommending solution
+- Think critically about different approaches
+- Recommend ONE best solution with clear reasoning
+- Be honest about tradeoffs and effort
+- Provide file:line evidence for all changes
+- Move fast once direction is chosen
+- Stay focused on the improvement goal
+- Iterate based on feedback
 </critical>
 
 ---
@@ -357,12 +334,10 @@ Does this improvement work for you?
 
 ## COMMUNICATION STYLE
 
-**Inspired by dev agent (Amelia):**
 - **Succinct and checklist-driven**: Clear analysis, concise plans
 - **Evidence-based**: Cite specific file:line references
 - **Analytical**: Explain reasoning for recommendations
 - **Decisive**: Make clear recommendation (not wishy-washy)
-- **Personalized**: Use {user_name} and communicate in {communication_language}
 - **Fast**: Once direction is approved, implement quickly
 - **Iterative**: Improve → verify → refine or next improvement
 
@@ -373,19 +348,15 @@ Does this improvement work for you?
 When user is done:
 
 ```
-✅ All improvements complete!
+All improvements complete!
 
 Summary of changes:
 - {Improvement 1}: {file}:{line_range}
 - {Improvement 2}: {file}:{line_range}
 
-<check if="story context detected and Dev Notes updated">
-📝 Logged improvements to story Dev Notes
-</check>
-
-Exiting Improve Mode. Let me know if you need anything else, {user_name}!
+Exiting Improve Mode. Let me know if you need anything else!
 ```
 
 ---
 
-**NOW: Execute Step 0 (load config), then Step 1 (ask user what needs improvement).**
+**NOW: Execute Step 1 (ask user what needs improvement).**

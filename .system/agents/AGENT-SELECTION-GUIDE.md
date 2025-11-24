@@ -8,7 +8,7 @@ This guide explains how the **agent-selector skill** automatically chooses the o
 
 ### 1. Task Analysis
 
-When orchestrator-exe identifies a task, it extracts key characteristics:
+When orc-exe identifies a task, it extracts key characteristics:
 
 ```yaml
 task_characteristics:
@@ -310,7 +310,7 @@ risk: low
 
 **Solutions:**
 1. Break down task into smaller subtasks
-2. Use BMAD workflow directly (/dev-story, /prd, etc.)
+2. Use workflow directly (/dev-story, /prd, etc.)
 3. Assign to general development-executor with manual mode
 4. Consider creating new specialized agent for this task type
 
@@ -400,7 +400,7 @@ A: Yes! Operator always has final authority. If you disagree with the recommenda
 A: You can manually assign agents by loading their persona directly without using agent-selector.
 
 **Q: Do I have to use agent-selector?**
-A: No. It's opt-in via orchestrator-exe. You can continue using BMAD workflows independently.
+A: No. It's opt-in via orc-exe. You can continue using workflows independently.
 
 **Q: How accurate are the confidence scores?**
 A: Confidence scores are based on the multi-criteria rubric. Over time, as agent-assignments.yaml grows, the system learns and improves.
@@ -409,7 +409,7 @@ A: Confidence scores are based on the multi-criteria rubric. Over time, as agent
 A: Yes, via contract-based handoffs. For example, validation-controller automatically hands off to testing-specialist for Level 2 validation.
 
 **Q: What happens if an agent fails?**
-A: The agent escalates to orchestrator-exe with failure details. Orchestrator can reassign to different agent or escalate to operator.
+A: The agent escalates to orc-exe with failure details. Orchestrator can reassign to different agent or escalate to operator.
 
 ## Summary
 
@@ -431,4 +431,4 @@ A: The agent escalates to orchestrator-exe with failure details. Orchestrator ca
 **See Also:**
 - README.md - Agent system overview
 - agent-capabilities.yaml - Full agent definitions
-- .claude/skills/orchestrator-exe/agent-selector.md - Selection skill implementation
+- .claude/skills/orc-exe/agent-selector.md - Selection skill implementation

@@ -1,7 +1,7 @@
 # Examples Validation Report
 
 **Generated:** 2025-01-15
-**Purpose:** Manual review assistance for orchestrator-exe examples
+**Purpose:** Manual review assistance for orc-exe examples
 
 ---
 
@@ -148,7 +148,7 @@ This is **intentional** - the files show different perspectives:
 
 4. **Review EXAMPLES.md flow**
    ```bash
-   cat docs/orchestrator-exe/EXAMPLES.md | head -300
+   cat docs/orc-exe/EXAMPLES.md | head -300
    ```
    - Does the quick start make sense?
    - Are the examples referenced correctly?
@@ -162,7 +162,7 @@ This is **intentional** - the files show different perspectives:
 
 6. **Verify test files would actually work**
    ```bash
-   node tests/orchestrator-exe/skill-isolation-test.js
+   node tests/orc-exe/skill-isolation-test.js
    ```
    - Do tests run without errors?
    - Are test assertions reasonable?
@@ -205,7 +205,7 @@ grep "contract_id:" .system/parallel-work/examples/yaml-contracts-autonomous.md
 All automated tests passed:
 
 ```bash
-$ cd tests/orchestrator-exe
+$ cd tests/orc-exe
 $ bash run-all-tests.sh
 
 TEST 1: Skill Isolation ✓ PASSED
