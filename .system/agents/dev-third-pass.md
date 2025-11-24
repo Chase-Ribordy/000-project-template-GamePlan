@@ -20,8 +20,19 @@ IT WORKS AND LOOKS GOOD. NOW MAKE IT BULLETPROOF.
 - First pass gave us: Functionality
 - Second pass gave us: Polish
 - Third pass delivers: Production readiness
-- Method: Operator lists issues -> Batch fix -> Validate
+- Method: Receive issue list -> Fix autonomously -> Validate -> Write contract
 ```
+
+## Autonomous Execution Mode
+
+Third pass runs with MINIMAL operator intervention:
+
+1. **Receive bug list** - Load from .system/bug-list.yaml
+2. **Process autonomously** - Fix each bug in batch
+3. **Test with Playwright** - Autonomous validation after each fix
+4. **Self-correct** - Fix regressions automatically
+5. **Write completion contract** - Document all fixes
+6. **Escalate only if blocked** - Minimal operator questions
 
 ## Operator-Driven Bug List
 
@@ -35,7 +46,7 @@ Bug List Location: .system/bug-list.yaml
 
 ### Bug List Format
 ```yaml
-# Created by operator via orc-exe *bugs command
+# Created by operator via orc-exe
 bugs:
   - id: BUG-001
     severity: high
@@ -128,16 +139,37 @@ For each fix, verify:
 3. **Edge cases covered** - Add test for the bug scenario
 4. **Code quality** - Clean fix, not a hack
 
-## Playwright Validation
+## Playwright Validation (Autonomous)
 
-After batch completion:
+After each fix AND after batch completion:
+
 ```
-1. browser_navigate to affected areas
-2. Verify each bug fix visually
-3. browser_console_messages - no new errors
-4. browser_take_screenshot - document fixed state
-5. Report batch results to orc-exe
+1. mcp__playwright__browser_navigate to affected areas
+2. mcp__playwright__browser_click through fixed functionality
+3. mcp__playwright__browser_console_messages - verify no new errors
+4. mcp__playwright__browser_take_screenshot - document fixed state
+5. If regression detected: fix and re-test
+6. Write completion contract when batch done
 ```
+
+### Regression Testing Loop
+```
+fix_bug() -> test_with_playwright() ->
+  if regression:
+    analyze_console_messages()
+    revert_or_fix()
+    test_with_playwright()  # retry
+  else:
+    mark_bug_fixed()
+    next_bug()
+```
+
+### Post-Batch Validation
+After completing all bugs in a batch:
+1. Full regression test of all affected areas
+2. Screenshot documentation of all fixes
+3. Console error check across entire app
+4. Write batch completion contract
 
 ## Coordination Contract
 
@@ -198,9 +230,12 @@ Third pass has FOCUSED operator interaction:
 - Story contract with `pass: third`
 
 ### MCP Tools
-- `playwright.browser_navigate` - Verify fixes
-- `playwright.browser_console_messages` - Check for errors
-- `playwright.browser_take_screenshot` - Document fixed state
+- `mcp__playwright__browser_navigate` - Verify fixes in browser
+- `mcp__playwright__browser_click` - Test fixed interactions
+- `mcp__playwright__browser_type` - Test fixed form inputs
+- `mcp__playwright__browser_console_messages` - Check for errors
+- `mcp__playwright__browser_take_screenshot` - Document fixed state
+- `mcp__playwright__browser_snapshot` - Accessibility validation
 
 ## Success Criteria
 

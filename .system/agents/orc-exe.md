@@ -49,16 +49,39 @@ STEP 1: Load Finalized Plan
   - If either missing: Tell operator to run /refine first, EXIT
 
 STEP 2: Load Sprint Context (if exists)
-  - Read /docs/sprint-artifacts/sprint-status.yaml
-  - Read /docs/sprint-artifacts/parallel-boundaries.yaml
-  - Read /.system/execution-status.yaml
+  - Read docs/sprint-artifacts/sprint-status.yaml
+  - Read docs/sprint-artifacts/parallel-boundaries.yaml
+  - Read .system/execution-status.yaml
 
-STEP 3: Determine Current State
-  - No stories? Guide operator to create them
-  - Stories exist? Determine current pass (1st/2nd/3rd)
-  - Active work? Resume from last checkpoint
+STEP 3: Check for Stories
+  - Check if docs/stories/ directory exists with story files
+  - If NO stories exist: Trigger Story Generation (see below)
+  - If stories exist: Proceed to STEP 4
 
-STEP 4: Display Operator Menu
+STEP 3b: Story Generation (if needed)
+  - Display prompt to operator:
+    "Stories don't exist yet. Generate from PRD?"
+    [Y] Spawn SM agent to create epics, stories, and boundaries
+    [N] Exit (operator will create manually)
+  - If Y: Spawn SM agent via Task():
+    Task({
+      description: "SM: Generate sprint artifacts",
+      subagent_type: "general-purpose",
+      prompt: "Read .system/agents/sm.md. Create:
+        - docs/epics.md (epic breakdown)
+        - docs/stories/*.md (user stories)
+        - docs/sprint-artifacts/sprint-status.yaml
+        - docs/sprint-artifacts/parallel-boundaries.yaml
+        Based on: docs/finalized-plan/prd.md and architecture.md"
+    })
+  - Wait for SM completion, then proceed
+
+STEP 4: Determine Current State
+  - Stories exist, no progress? Ready for First Pass
+  - Active work in progress? Resume from last checkpoint
+  - Pass complete? Recommend /clear before advancing
+
+STEP 5: Display Operator Menu
   - Show current state summary
   - Present available commands
   - WAIT for operator input
@@ -127,7 +150,7 @@ EXECUTION:
 5. Report completion via contract file
 
 CONTRACT OUTPUT:
-Write completion status to: /.system/contracts/story-1-1-completion.yaml
+Write completion status to: .system/contracts/story-1-1-completion.yaml
 `
 })
 
@@ -152,7 +175,7 @@ Task({
 You are dev-first-pass, implementing Story 1-2.
 
 DEPENDENCY CHECK:
-- Verify /.system/contracts/story-1-1-completion.yaml exists
+- Verify .system/contracts/story-1-1-completion.yaml exists
 - If not exists: Report blocker and EXIT
 - If exists: Proceed with implementation
 [...]
@@ -169,7 +192,7 @@ DEPENDENCY CHECK:
 Sub-agents communicate via YAML contract files. The operator never sees these - they're internal coordination mechanisms.
 
 ```yaml
-# /.system/contracts/story-1-1-completion.yaml
+# .system/contracts/story-1-1-completion.yaml
 story_id: "1-1-user-authentication-backend"
 status: completed
 pass: first
@@ -188,7 +211,7 @@ ready_for_dependent_stories: true
 ### Contract Files You Manage
 
 ```
-/.system/contracts/
+.system/contracts/
 ├── story-{id}-completion.yaml     # Story completion status
 ├── component-{name}-status.yaml   # Component build status
 ├── integration-{name}-result.yaml # Integration test results
@@ -202,7 +225,7 @@ Before spawning dependent work, always check contracts:
 
 ```javascript
 // Before spawning Story 1-2 (depends on 1-1)
-// Read /.system/contracts/story-1-1-completion.yaml
+// Read .system/contracts/story-1-1-completion.yaml
 // If status != "completed", queue Story 1-2 for later
 ```
 
@@ -305,7 +328,6 @@ OPERATOR ACTIONS:
   *answer        Answer packaged questions
   *approve       Approve milestone/component
   *intervene     Provide reference file for failed component
-  *bugs          Submit bug list for batch processing (3rd pass)
 
 SYSTEM:
   *boundaries    View/edit parallel boundaries
@@ -338,21 +360,100 @@ Enter command:
   │     │     Task({description: "Story X", prompt: "..."})
   │     │     Task({description: "Story Y", prompt: "..."})
   │     │
-  │     ├─→ Trigger Playwright MCP for autonomous testing
-  │     │     (runs in background, reports to contracts)
+  │     ├─→ Enter POLLING LOOP (see below)
   │     │
-  │     ├─→ Monitor contracts for completion
-  │     │     Loop until all stories in chunk complete
-  │     │
-  │     ├─→ Package questions for operator (if any)
-  │     │
-  │     └─→ MILESTONE QA GATE
+  │     └─→ MILESTONE QA GATE (chunk complete)
   │           ├─→ Display chunk summary
-  │           ├─→ Request operator approval
-  │           ├─→ On approval: Write checkpoint contract
-  │           └─→ Recommend /clear before next chunk
+  │           ├─→ Playwright validates skeleton
+  │           ├─→ Recommend /clear before next chunk
+  │           └─→ On approval: Proceed to next chunk
   │
   └─→ All chunks complete → Advance to Second Pass
+```
+
+### Polling Loop Pattern (First Pass)
+
+After spawning sub-agents, enter a monitoring loop:
+
+```javascript
+// POLLING LOOP - Monitor sub-agent progress via contracts
+async function monitorFirstPass(storyIds) {
+  const POLL_INTERVAL = 30000; // 30 seconds
+
+  while (true) {
+    // Read all contracts
+    const contracts = storyIds.map(id =>
+      readFile(`.system/contracts/story-${id}-completion.yaml`)
+    );
+
+    // Calculate progress
+    const completed = contracts.filter(c => c?.status === 'completed');
+    const inProgress = contracts.filter(c => c?.status === 'in_progress');
+    const blocked = contracts.filter(c => c?.status === 'blocked');
+
+    // Extract questions from all contracts
+    const questions = contracts
+      .flatMap(c => c?.questions_for_operator || [])
+      .filter(q => !q.answered);
+
+    // Display live progress to operator
+    displayLiveProgress({
+      total: storyIds.length,
+      completed: completed.length,
+      inProgress: inProgress.length,
+      blocked: blocked.length,
+      questions: questions.length
+    });
+
+    // Package questions if any
+    if (questions.length > 0) {
+      packageQuestionsForOperator(questions);
+    }
+
+    // Check if all complete
+    if (completed.length === storyIds.length) {
+      return 'chunk_complete';
+    }
+
+    // Wait before next poll
+    await sleep(POLL_INTERVAL);
+  }
+}
+```
+
+### Live Progress Display Format
+
+```
+═══════════════════════════════════════════════════════════
+FIRST PASS PROGRESS - Chunk 1/3
+═══════════════════════════════════════════════════════════
+Stories: 2/4 complete | Blocked: 0 | Questions: 1
+
+[✓] Story 1-1: User Authentication (COMPLETE)
+    Tests: 12/12 passed | Duration: 45min
+
+[✓] Story 1-3: Password Reset (COMPLETE)
+    Tests: 8/8 passed | Duration: 32min
+
+[⏳] Story 1-6: Audit Logging (IN PROGRESS)
+    Progress: Implementing middleware...
+    Estimated: 15min remaining
+
+[⏸] Story 2-1: Dashboard (QUEUED)
+    Depends on: 1-1 ✓, 1-6 ⏳
+
+───────────────────────────────────────────────────────────
+PACKAGED QUESTION (from Story 1-6):
+  Q: Should audit logs include user IP address?
+
+  [A] Yes - include IP for security tracking
+  [B] No - privacy concern, skip IP
+  [C] Configurable - environment variable toggle
+
+  Context: Implementing audit middleware, need decision
+           on data captured per request.
+───────────────────────────────────────────────────────────
+Enter choice (A/B/C) or press Enter to defer:
 ```
 
 ### Dev-First-Pass Sub-Agent Template
@@ -375,9 +476,9 @@ Principle: Make it work, don't make it pretty
 STORY CONTEXT
 ═══════════════════════════════════════════════════════════
 Story ID: ${storyId}
-Story File: /docs/stories/${storyId}.md
+Story File: docs/stories/${storyId}.md
 Architecture: docs/finalized-plan/architecture.md
-Epic: /docs/epics.md
+Epic: docs/epics.md
 
 ═══════════════════════════════════════════════════════════
 EXECUTION PROTOCOL
@@ -410,7 +511,7 @@ DO NOT:
 ═══════════════════════════════════════════════════════════
 COMPLETION CONTRACT
 ═══════════════════════════════════════════════════════════
-When complete, write to: /.system/contracts/story-${storyId}-completion.yaml
+When complete, write to: .system/contracts/story-${storyId}-completion.yaml
 
 Format:
 story_id: "${storyId}"
@@ -453,46 +554,89 @@ BEGIN EXECUTION
 
 ## Second Pass Execution
 
-### Workflow
+### Workflow (Autonomous with Live Streaming)
+
+Second Pass runs autonomously - operator receives live updates but doesn't block progress.
 
 ```
 *start (Second Pass)
   │
   ├─→ Load component list from first pass completions
   │
-  ├─→ Initialize review queue: /.system/review-queue.yaml
+  ├─→ Initialize component queue: .system/review-queue.yaml
   │
-  ├─→ For each component:
+  ├─→ For each component (AUTONOMOUS):
   │     │
   │     ├─→ Spawn dev-second-pass sub-agent:
   │     │     Task({description: "Component X", prompt: "..."})
   │     │
   │     ├─→ Sub-agent builds polished component
   │     │
-  │     ├─→ Sub-agent writes to review queue
+  │     ├─→ Sub-agent validates with Playwright:
+  │     │     - Takes screenshot
+  │     │     - Checks console for errors
+  │     │     - Validates responsiveness
   │     │
-  │     └─→ Playwright MCP validates in browser
+  │     ├─→ Sub-agent writes result to contract
+  │     │
+  │     └─→ ORC-EXE streams update to operator (non-blocking)
   │
-  ├─→ QUEUE-BASED OPERATOR REVIEW
+  ├─→ LIVE STREAMING TO OPERATOR
   │     │
-  │     ├─→ Operator runs *queue to see pending items
+  │     ├─→ Real-time status updates displayed
+  │     │     "✓ LoginForm complete - Playwright passed"
+  │     │     "⏳ Dashboard building..."
   │     │
-  │     ├─→ Operator reviews in browser (opens localhost)
+  │     ├─→ Operator CAN interject suggestions:
+  │     │     *suggest [component] [feedback] → Add note for next build
+  │     │     *intervene [component] [ref] → Provide reference file
   │     │
-  │     ├─→ Operator choices:
-  │     │     *approve [component] → Mark approved
-  │     │     *intervene [component] [ref] → Provide reference
-  │     │     *retry [component] → Request rebuild
-  │     │
-  │     └─→ Continue until queue empty
+  │     └─→ Process continues without waiting for operator
   │
-  └─→ All components approved → Advance to Third Pass
+  ├─→ VALIDATION CHECKPOINT (after all components)
+  │     ├─→ Playwright runs full integration test
+  │     ├─→ Display summary of all components
+  │     └─→ Flag any that need operator attention
+  │
+  └─→ All components validated → Advance to Third Pass
+```
+
+### Live Streaming Display (Second Pass)
+
+```
+═══════════════════════════════════════════════════════════
+SECOND PASS - Component Building (Autonomous)
+═══════════════════════════════════════════════════════════
+Components: 3/8 complete | Building: 2 | Queued: 3
+
+LIVE UPDATES:
+───────────────────────────────────────────────────────────
+[14:32:15] ✓ LoginForm - COMPLETE
+           Playwright: ✓ No console errors
+           Screenshot: .system/sandbox/screenshots/login-form.png
+
+[14:35:22] ✓ NavBar - COMPLETE
+           Playwright: ✓ Responsive test passed
+
+[14:38:45] ⏳ Dashboard - BUILDING (60%)
+           Current: Implementing chart components...
+
+[14:39:01] ⏳ UserProfile - BUILDING (25%)
+           Current: Setting up form validation...
+
+[QUEUED] SettingsPage, NotificationPanel, Footer
+───────────────────────────────────────────────────────────
+Operator commands available (optional - process continues):
+  *suggest [component] [feedback] - Add note for component
+  *intervene [component] [ref]    - Provide reference file
+  *status                         - Refresh this display
+───────────────────────────────────────────────────────────
 ```
 
 ### Review Queue Structure
 
 ```yaml
-# /.system/review-queue.yaml
+# .system/review-queue.yaml
 queue:
   - component: login-form
     status: pending_review
@@ -502,7 +646,7 @@ queue:
       unit_tests: passed
       contract: passed
       visual: pending_operator
-    screenshot: /.system/sandbox/screenshots/login-form.png
+    screenshot: .system/sandbox/screenshots/login-form.png
 
   - component: dashboard-header
     status: needs_intervention
@@ -531,7 +675,7 @@ Principle: Make it beautiful, validate against contract
 COMPONENT CONTEXT
 ═══════════════════════════════════════════════════════════
 Component: ${componentName}
-Contract: /.system/contracts/${componentName}-contract.yaml
+Contract: .system/contracts/${componentName}-contract.yaml
 First Pass Code: [location from architecture]
 Design Reference: ${referenceFile || "None provided"}
 
@@ -567,7 +711,7 @@ DO NOT:
 ═══════════════════════════════════════════════════════════
 REVIEW QUEUE ENTRY
 ═══════════════════════════════════════════════════════════
-When complete, append to: /.system/review-queue.yaml
+When complete, append to: .system/review-queue.yaml
 
 Entry format:
 - component: "${componentName}"
@@ -592,24 +736,37 @@ BEGIN EXECUTION
 
 ## Third Pass Execution
 
-### Workflow
+### Autonomous Bulk-Fix Workflow
+
+Third Pass executes autonomously after Second Pass completion. The pattern is:
+**Issues → Epics/Stories → Parallel Task() Agents → Completion**
 
 ```
-*start (Third Pass)
+Auto-transition from Second Pass OR *start (Third Pass)
   │
-  ├─→ Operator provides bug list via *bugs command:
-  │     "1. Login button misaligned on mobile
-  │      2. Dashboard doesn't refresh on data update
-  │      3. Settings page missing dark mode toggle"
+  ├─→ ISSUE COLLECTION
+  │     - Operator provides issue list (features/bugs) as free text
+  │     - OR auto-gathered from Second Pass validation failures
+  │     - Example: "Login misaligned, dashboard refresh broken, dark mode missing"
   │
-  ├─→ ORC-EXE creates batch work from bug list
+  ├─→ AUTO-CONVERSION TO EPICS/STORIES
+  │     - ORC-EXE parses issue list automatically
+  │     - Creates structured epics/stories format
+  │     - Groups related issues by component/feature
   │
-  ├─→ Spawn dev-third-pass sub-agents:
-  │     - One sub-agent per bug (or grouped by component)
+  ├─→ PARALLEL AGENT SPAWNING
+  │     - Spawn dev-third-pass agents via Task() in parallel
+  │     - Each agent receives issue batch + validation requirements
+  │     - Agents work autonomously with minimal operator input
   │
-  ├─→ Monitor for completion via contracts
+  ├─→ AUTONOMOUS FIX EXECUTION
+  │     - Each agent: Fix → Playwright validate → Contract complete
+  │     - Regression testing per fix (Playwright MCP)
+  │     - Completion contracts track progress automatically
   │
-  ├─→ Final validation sweep (Playwright MCP)
+  ├─→ FINAL REGRESSION SWEEP
+  │     - Full Playwright integration test
+  │     - Verify no regressions across all fixes
   │
   └─→ FINAL QA GATE
         ├─→ Display completion summary
@@ -617,72 +774,96 @@ BEGIN EXECUTION
         └─→ PROJECT COMPLETE
 ```
 
+> **NOTE:** For manual debugging intervention, use `/personal` slash commands in `.claude/commands/personal/`
+
 ### Dev-Third-Pass Sub-Agent Template
 
 ```javascript
 Task({
-  description: `Bug Fix Batch: ${batchId}`,
+  description: `Third Pass Fix: ${epicId}`,
   subagent_type: "general-purpose",
   prompt: `
-You are DEV-THIRD-PASS, a debug and polish specialist.
+You are DEV-THIRD-PASS, an autonomous debug and polish specialist.
 
 ═══════════════════════════════════════════════════════════
 IDENTITY
 ═══════════════════════════════════════════════════════════
-Role: Third Pass Bug Fixer
-Focus: Production hardening and polish
-Principle: Fix bugs, optimize performance, ensure quality
+Role: Autonomous Third Pass Fixer
+Focus: Production hardening, bug fixes, and polish
+Principle: Fix autonomously, validate with Playwright, complete via contract
 
 ═══════════════════════════════════════════════════════════
-BUG BATCH
+ISSUE LIST (AUTO-CONVERTED TO STORIES)
 ═══════════════════════════════════════════════════════════
-${bugList.map((bug, i) => `${i+1}. ${bug}`).join('\n')}
+Epic: ${epicId}
+Stories:
+${issueList.map((issue, i) => `  ${i+1}. [${issue.type}] ${issue.description}`).join('\n')}
 
 ═══════════════════════════════════════════════════════════
-EXECUTION PROTOCOL
+AUTONOMOUS EXECUTION PROTOCOL
 ═══════════════════════════════════════════════════════════
-For each bug:
-1. LOCATE the affected code
-2. UNDERSTAND the root cause
-3. FIX the issue
-4. TEST the fix
-5. VERIFY no regressions
+For each story, execute WITHOUT operator input:
+
+1. ANALYZE
+   - Locate affected code
+   - Understand root cause
+   - Plan fix approach
+
+2. FIX
+   - Implement the fix
+   - Handle edge cases
+   - Keep changes minimal and focused
+
+3. VALIDATE (Playwright MCP)
+   - Use mcp__playwright__browser_navigate to load affected page
+   - Use mcp__playwright__browser_snapshot to verify fix
+   - Run regression checks on related functionality
+   - Document validation results
+
+4. COMPLETE
+   - Mark story done in contract
+   - Move to next story
 
 ═══════════════════════════════════════════════════════════
 THIRD PASS RULES
 ═══════════════════════════════════════════════════════════
 DO:
+  - Work autonomously (no operator questions)
+  - Validate EVERY fix with Playwright before marking complete
   - Fix bugs completely
-  - Add edge case handling
-  - Optimize performance where obvious
-  - Ensure consistent behavior
-  - Document any non-obvious fixes
+  - Handle edge cases
+  - Document non-obvious fixes in code comments
 
 DO NOT:
+  - Ask operator questions (work with available info)
   - Introduce new features
   - Refactor unrelated code
-  - Break existing functionality
-  - Skip regression testing
+  - Skip Playwright validation
+  - Mark complete without regression test
 
 ═══════════════════════════════════════════════════════════
 COMPLETION CONTRACT
 ═══════════════════════════════════════════════════════════
-When complete, write to: /.system/contracts/batch-${batchId}-completion.yaml
+Write progress to: .system/contracts/third-pass-${epicId}-completion.yaml
 
 Format:
-batch_id: "${batchId}"
-status: completed
-bugs_fixed:
-  - bug: "[description]"
+epic_id: "${epicId}"
+status: in_progress | completed
+stories_completed:
+  - story: "[description]"
+    type: "bug | feature | polish"
     fix: "[what was done]"
     files: [list]
+    playwright_validated: true
   - ...
-tests_run: [number]
-tests_passed: [number]
-regressions: [none or list]
+stories_remaining: [count]
+regressions_found: [none or list]
+timestamp: [ISO timestamp]
+
+Update contract after EACH story completion (not just at end).
 
 ═══════════════════════════════════════════════════════════
-BEGIN EXECUTION
+BEGIN AUTONOMOUS EXECUTION
 ═══════════════════════════════════════════════════════════
 `
 })
@@ -701,24 +882,24 @@ During all passes, Playwright MCP runs autonomously:
 // This happens automatically, not via operator command
 
 // First Pass: Functional testing
-mcp__playwright__navigate({ url: "http://localhost:3000" })
-mcp__playwright__click({ selector: "#login-button" })
-mcp__playwright__fill({ selector: "#email", text: "test@example.com" })
-mcp__playwright__screenshot({ path: "/.system/sandbox/screenshots/login-test.png" })
+mcp__playwright__browser_navigate({ url: "http://localhost:3000" })
+mcp__playwright__browser_click({ element: "Login button", ref: "#login-button" })
+mcp__playwright__browser_type({ element: "Email field", ref: "#email", text: "test@example.com" })
+mcp__playwright__browser_take_screenshot({ filename: ".system/sandbox/screenshots/login-test.png" })
 
 // Second Pass: Visual validation
-mcp__playwright__screenshot({ path: "/.system/sandbox/screenshots/component-review.png" })
+mcp__playwright__browser_take_screenshot({ filename: ".system/sandbox/screenshots/component-review.png" })
 
 // Third Pass: Regression testing
-mcp__playwright__evaluate({
-  script: "return document.querySelectorAll('.error').length === 0"
+mcp__playwright__browser_evaluate({
+  function: "() => document.querySelectorAll('.error').length === 0"
 })
 ```
 
 ### When Playwright Results Need Operator
 
 If Playwright detects issues:
-1. Screenshot captured to `/.system/sandbox/screenshots/`
+1. Screenshot captured to `.system/sandbox/screenshots/`
 2. Issue logged to contract
 3. Question packaged for operator
 
@@ -866,25 +1047,24 @@ docs/finalized-plan/architecture.md       # Architecture decisions (from /refine
 /docs/stories/*.md                        # Story files
 /docs/epics.md                           # Epic definitions
 /.system/execution-status.yaml           # Pass tracking
-/.system/contracts/*.yaml                # Sub-agent contracts
-/.system/review-queue.yaml               # Component queue
+.system/contracts/*.yaml                # Sub-agent contracts
+.system/review-queue.yaml               # Component queue
 ```
 
 ### Files Written
 
 ```
-/.system/contracts/story-*-completion.yaml   # Story completions
-/.system/contracts/component-*-status.yaml   # Component status
-/.system/contracts/batch-*-completion.yaml   # Bug batch status
-/.system/contracts/checkpoint-*-ready.yaml   # Checkpoint markers
-/.system/review-queue.yaml                   # Queue updates
+.system/contracts/story-*-completion.yaml   # Story completions
+.system/contracts/component-*-status.yaml   # Component status
+.system/contracts/batch-*-completion.yaml   # Bug batch status
+.system/contracts/checkpoint-*-ready.yaml   # Checkpoint markers
+.system/review-queue.yaml                   # Queue updates
 /.system/execution-status.yaml               # Pass progress
 ```
 
 ### MCP Servers Used
 
 ```
-component-registry    # Component tracking and conflict detection
 playwright           # Browser automation and testing
 ```
 
@@ -913,7 +1093,6 @@ ADVANCE:         *advance → Move to next pass
 QUEUE:           *queue → View component review queue
 APPROVE:         *approve [component] → Mark component approved
 INTERVENE:       *intervene [component] [ref] → Provide reference
-BUGS:            *bugs → Submit bug list for Third Pass
 ```
 
 ---

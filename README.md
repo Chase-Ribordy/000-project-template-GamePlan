@@ -1,236 +1,107 @@
-# Project Template
+# Project Template - Operator Guide
 
-AI-assisted development workflow powered by **ORC-EXE**, the supreme orchestrator.
+AI-assisted development: **idea → execution** in two commands.
 
----
-
-## TL;DR
-
-```bash
-# Start a new project
-/refine                  # Answer questions, creates PRD + Architecture (35-45 min)
-
-# Execute the project
-/orc-exe                 # Builds your project in three passes
-
-# Save progress anytime
-/handoff                 # Creates next-steps.md + pushes to GitHub
-/push-to-github          # Quick checkpoint save
-```
+## Prerequisites
+- Claude Code CLI
+- Playwright MCP server (for testing)
 
 ---
 
-## Complete Workflow
+## Workflow Overview
 
 ```
-                         YOUR ROLE                        SYSTEM OUTPUT
-                         ─────────                        ─────────────
-Step 1: /refine
-  │ Answer 8-12 discovery questions     →    docs/initial-planning/
-  │ Review initial planning docs              - full-idea.md
-  │ Confirm for finalization                  - scope.md
-  │                                           - manual.md
-  │                                      →    docs/finalized-plan/
-  │                                           - prd.md
-  │                                           - architecture.md
-  ▼
-Step 2: /orc-exe
-  │
-  ├─► FIRST PASS: Skeleton Build
-  │   Your role: Answer questions only
-  │   Testing: Playwright runs autonomously
-  │   Output: Functional but ugly app
-  │   End: Approve milestone → /clear
-  │
-  ├─► SECOND PASS: Component Polish
-  │   Your role: Review queue, approve components
-  │   Testing: Check browser after each integration
-  │   Output: Polished components
-  │   End: All components approved → /clear
-  │
-  └─► THIRD PASS: Debug & Finish
-      Your role: List bugs, final review
-      Testing: Final validation sweep
-      Output: Production-ready application
-      End: Project complete
+/refine (35-45 min)          /orc-exe (hours)
+        │                           │
+        ▼                           ▼
+   Answer Questions            Three-Pass Build
+        │                           │
+        ▼                           ▼
+   prd.md + architecture.md    Working Application
 ```
+
+---
+
+## Step 1: Idea Pipeline (`/refine`)
+
+**What you do**: Answer 8-12 discovery questions about your idea.
+
+**What it creates**:
+- `docs/initial-planning/` - Vision, scope, manual
+- `docs/finalized-plan/prd.md` - Product requirements
+- `docs/finalized-plan/architecture.md` - Technical design
+
+When both `prd.md` and `architecture.md` exist, you're ready for execution.
+
+---
+
+## Step 2: Execution Pipeline (`/orc-exe`)
+
+**Prerequisites**: `prd.md` and `architecture.md` must exist.
+
+### Three Passes
+
+| Pass | Goal | Your Role |
+|------|------|-----------|
+| **First** | Skeleton build (working but ugly) | Answer questions only |
+| **Second** | Component polish | Review queue, approve components |
+| **Third** | Debug & finish | List bugs, final review |
+
+### When to `/clear`
+
+Run `/clear` at these checkpoints to maintain performance:
+- After each chunk in First Pass (orc-exe will recommend)
+- Between passes
+- Whenever `*checkpoint` is called
+
+State is saved to YAML files - context survives `/clear`.
 
 ---
 
 ## Commands Reference
 
-### Planning Pipeline
+### Core Commands
 
-| Command | When to Use | Time |
-|---------|-------------|------|
-| `/refine` | Start a new project idea | 35-45 min |
+| Command | Purpose |
+|---------|---------|
+| `/refine` | Start idea pipeline (35-45 min) |
+| `/orc-exe` | Start execution pipeline |
+| `/handoff` | Create next-steps.md + push to GitHub |
+| `/push-to-github` | Quick checkpoint save |
 
-### Execution Pipeline
+### During Execution (`/orc-exe`)
 
-| Command | When to Use |
-|---------|-------------|
-| `/orc-exe` | After /refine completes, to build the project |
-| `*start` | Begin or resume autonomous execution |
-| `*status` | Check current execution state |
+| Command | Purpose |
+|---------|---------|
+| `*start` | Begin/resume autonomous execution |
+| `*status` | Check current state |
 | `*pass` | See current pass details |
-| `*advance` | Move to next pass (after QA gate) |
-| `*queue` | View component review queue (2nd pass) |
-| `*approve` | Approve a milestone or component |
-| `*bugs` | Submit bug list for batch processing (3rd pass) |
+| `*approve` | Approve milestone or component |
 | `*checkpoint` | Save state, recommends /clear |
-| `*help` | Show all orc-exe commands |
-
-### Checkpoints & Handoff
-
-| Command | What It Does |
-|---------|--------------|
-| `/handoff` | Creates `next-steps.md` with full context + pushes to GitHub |
-| `/push-to-github` | Quick commit + push without documentation |
+| `*help` | Show all commands |
 
 ---
 
-## When to /clear
+## Operator Tips
 
-Context window management is critical for performance. Run `/clear` at these checkpoints:
-
-1. **After each chunk** in First Pass (orc-exe will recommend)
-2. **After significant component batch** in Second Pass
-3. **Before starting Third Pass**
-4. **Whenever orc-exe recommends** via `*checkpoint`
-
-The system saves state to YAML files, so context is preserved across `/clear`.
+1. **Trust autonomous execution** - The system handles coordination
+2. **Only intervene when asked** - Answer questions, don't micromanage
+3. **Use `/clear` between passes** - Keeps context window healthy
+4. **Check browser at pass boundaries** - Validate before advancing
+5. **`/handoff` before closing** - Preserves session context
 
 ---
 
-## Project Structure
+## Quick Start
 
-```
-project/
-├── docs/
-│   ├── initial-planning/         # From /refine (vision, scope)
-│   │   ├── full-idea.md
-│   │   ├── scope.md
-│   │   └── manual.md
-│   │
-│   ├── finalized-plan/           # From /refine (PRD, architecture)
-│   │   ├── prd.md                # ← Drives execution
-│   │   └── architecture.md       # ← Drives execution
-│   │
-│   ├── epics/                    # Created by SM agent
-│   └── stories/                  # User stories for execution
-│
-├── .system/                      # Orchestrator internals (ignore)
-│   ├── agents/                   # Agent definitions
-│   ├── contracts/                # Sub-agent coordination
-│   ├── parallel-boundaries.yaml  # Independent work chunks
-│   └── review-queue.yaml         # Component approval queue
-│
-├── .claude/
-│   └── commands/                 # Slash commands
-│
-├── src/                          # Your application code
-├── css/
-├── js/
-└── next-steps.md                 # Handoff documentation
-```
-
-### What You Work With
-- `docs/` - Review and approve planning documents
-- `src/`, `css/`, `js/` - Generated code (review as needed)
-- `next-steps.md` - Session handoff context
-
-### What the System Manages
-- `.system/` - Internal orchestration (contracts, queues, state)
-- `.claude/` - Command and skill definitions
-
----
-
-## Three-Pass System
-
-### First Pass: Skeleton Build
-**Goal**: Get the entire app working end-to-end, even if ugly.
-
-- Backend is fully functional
-- Frontend is minimal (default styles OK)
-- All data flows work
-- Tests pass
-
-**Your Role**: Answer questions when asked. Approve milestones.
-
-### Second Pass: Component Polish
-**Goal**: Replace ugly components with polished, production-quality versions.
-
-- Components built against contracts
-- CSS properly namespaced
-- Responsive and accessible
-- Visually polished
-
-**Your Role**: Review the queue. Approve components. Provide reference files if needed.
-
-### Third Pass: Debug & Finish
-**Goal**: Fix everything that isn't perfect.
-
-- Bug fixes from your list
-- Performance optimization
-- Final polish
-- Production readiness
-
-**Your Role**: Test the app. List issues. Final approval.
-
----
-
-## Typical Session Examples
-
-### New Project
-```
-1. /refine              # Start planning (35-45 min)
-2. Answer questions     # Clarify your idea
-3. /orc-exe             # Begin execution
-4. *start               # Start first pass
-5. ... work happens ...
-6. /handoff             # End session with documentation
-```
-
-### Resuming Work
-```
-1. Check next-steps.md  # Understand current state
-2. /orc-exe             # Re-activate orchestrator
-3. *status              # See where we left off
-4. *start               # Continue execution
-```
-
-### Quick Save
-```
-1. /push-to-github      # Commit and push current state
-```
-
----
-
-## Key Principles
-
-1. **ORC-EXE is your interface** - Talk to the orchestrator, not individual agents
-2. **Three passes, not one** - Skeleton first, polish second, bugs third
-3. **End-to-end testing** - Test milestones, not individual pieces
-4. **/clear at checkpoints** - Preserve context window performance
-5. **Focus on your idea** - The system handles process coordination
-
----
-
-## Getting Started
-
-### Prerequisites
-- Claude Code CLI installed
-- Git repository initialized
-- Node.js (if your project uses it)
-
-### First Time Setup
 ```bash
-# Clone the template
-git clone <repository-url> my-project
-cd my-project
+# New project
+/refine                  # Answer questions → creates planning docs
 
-# Start your project
-/refine
+# Build it
+/orc-exe                 # Three-pass autonomous build
+*start                   # Begin execution
+
+# Save progress
+/handoff                 # Full documentation + push
 ```
-
-Then follow the prompts. The system will guide you through everything.

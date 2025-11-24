@@ -361,7 +361,7 @@ The system tracks:
 
 **Low confidence scores (<50%):**
 - Task may not match any agent specialization
-- Consider breaking down task or using BMAD workflow directly
+- Consider breaking down task or using dev workflow directly
 
 **Agent unavailable:**
 - Check active-agents.yaml

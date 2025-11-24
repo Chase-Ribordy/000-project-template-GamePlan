@@ -64,7 +64,7 @@ Maps task types to agent specializations:
 |-----------|---------------|-------|-------------|
 | component-integration | integration-manager | 1.0 | development-executor (0.3) |
 | component-validation | validation-controller | 1.0 | testing-specialist (0.6) |
-| story_implementation | development-executor | 1.0 | dev (BMAD) (0.7) |
+| story_implementation | development-executor | 1.0 | dev-first-pass (0.7) |
 | contract_generation | contract-architect | 1.0 | - |
 | dependency_analysis | dependency-analyst | 1.0 | resource-allocator (0.6) |
 | test_generation | testing-specialist | 1.0 | validation-controller (0.6) |
@@ -179,7 +179,7 @@ The confidence score determines recommendation strength:
 | >0.90 | Excellent match | Auto-assign (if low risk) |
 | 0.75-0.90 | Strong match | Recommend, auto-assign if autonomous |
 | 0.50-0.75 | Moderate match | Recommend, suggest operator review |
-| <0.50 | Weak match | Escalate, suggest task breakdown or BMAD |
+| <0.50 | Weak match | Escalate, suggest task breakdown |
 
 ## Real-World Examples
 
@@ -209,7 +209,7 @@ risk: medium
 - Task type match: 0.3 (general capability, not specialized)
 - Complexity handling: 0.7 (can handle, but not optimal)
 - Execution mode: 0.7 (needs supervision for integration)
-- Skill access: 0.5 (BMAD workflows, missing MCP integration)
+- Skill access: 0.5 (dev workflows, missing MCP integration)
 - Availability: 1.0
 - Pass awareness: 0.6
 - **Total: 0.54**
@@ -235,7 +235,7 @@ risk: high
 - Task type match: 1.0 (story implementation specialist)
 - Complexity handling: 1.0 (tactical, complexity 4 in range)
 - Execution mode: 0.7 (manual recommended for high risk)
-- Skill access: 1.0 (BMAD dev workflows, test writing)
+- Skill access: 1.0 (dev workflows, test writing)
 - Availability: 1.0
 - Pass awareness: 1.0 (optimal for first pass backend work)
 - **Total: 0.965** ✓
@@ -243,7 +243,7 @@ risk: high
 **Selection:** development-executor (only candidate)
 **Confidence:** 96.5% (Excellent)
 **Mode Override:** autonomous → manual (due to high risk + first pass)
-**Reasoning:** "Complex backend foundation work in first pass requires manual execution. Development-executor wraps BMAD workflows with orchestrator coordination."
+**Reasoning:** "Complex backend foundation work in first pass requires manual execution. Development-executor wraps dev workflows with orchestrator coordination."
 
 ### Example 3: Validation (Fully Autonomous)
 

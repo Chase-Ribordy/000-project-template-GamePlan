@@ -1,0 +1,76 @@
+# Story Completion Contract Template
+# Sub-agents write this contract when completing/updating story work
+# ORC-EXE polls these contracts to monitor progress
+
+# Copy and rename to: story-{story-id}-completion.yaml
+
+story_id: ""
+story_title: ""
+pass: "first"  # first, second, third
+
+# Status tracking
+status: "in_progress"  # pending, in_progress, completed, blocked
+started_at: ""
+completed_at: ""
+duration_minutes: 0
+
+# Progress details (updated during work)
+progress:
+  percentage: 0
+  current_task: ""
+  tasks_completed: []
+  tasks_remaining: []
+
+# Test results
+tests:
+  total: 0
+  passed: 0
+  failed: 0
+  skipped: 0
+
+# Files modified
+files_modified: []
+  # Example:
+  # - path: "src/auth/login.ts"
+  #   action: "created"  # created, modified, deleted
+
+# Playwright validation (if applicable)
+playwright_validation:
+  ran: false
+  console_errors: 0
+  screenshots: []
+  responsive_check: null  # passed, failed, not_run
+
+# Questions for operator (ORC-EXE packages these)
+questions_for_operator: []
+  # Example:
+  # - id: "q1"
+  #   question: "Should audit logs include IP address?"
+  #   options:
+  #     - label: "A"
+  #       description: "Yes - include IP for security"
+  #     - label: "B"
+  #       description: "No - privacy concern"
+  #   context: "Implementing audit middleware"
+  #   answered: false
+  #   answer: ""
+
+# Blocker information (if status is 'blocked')
+blocker:
+  reason: ""
+  type: ""  # dependency, technical, clarification
+  waiting_for: ""
+
+# Acceptance criteria status
+acceptance_criteria: []
+  # Example:
+  # - criterion: "User can login with email/password"
+  #   status: "satisfied"  # pending, satisfied, failed
+
+# Dependencies
+dependencies:
+  required: []
+  all_satisfied: true
+
+# Handoff notes for next pass
+handoff_notes: ""

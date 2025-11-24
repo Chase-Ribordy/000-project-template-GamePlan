@@ -41,10 +41,10 @@ Use Playwright MCP for autonomous validation:
 
 ```
 After implementing story:
-1. browser_navigate to local app
-2. browser_click through user flows
-3. browser_console_messages to check for errors
-4. browser_take_screenshot for visual record
+1. mcp__playwright__browser_navigate to local app
+2. mcp__playwright__browser_click through user flows
+3. mcp__playwright__browser_console_messages to check for errors
+4. mcp__playwright__browser_take_screenshot for visual record
 5. If errors found: fix and re-test
 6. If blocked: escalate to orc-exe
 ```
@@ -146,11 +146,11 @@ Only escalate to orc-exe if:
 - Playwright screenshots to `.system/testing/screenshots/`
 
 ### MCP Tools
-- `playwright.browser_navigate` - Open local app
-- `playwright.browser_click` - Test interactions
-- `playwright.browser_type` - Test forms
-- `playwright.browser_console_messages` - Check errors
-- `playwright.browser_take_screenshot` - Visual record
+- `mcp__playwright__browser_navigate` - Open local app
+- `mcp__playwright__browser_click` - Test interactions
+- `mcp__playwright__browser_type` - Test forms
+- `mcp__playwright__browser_console_messages` - Check errors
+- `mcp__playwright__browser_take_screenshot` - Visual record
 
 ## Success Criteria
 

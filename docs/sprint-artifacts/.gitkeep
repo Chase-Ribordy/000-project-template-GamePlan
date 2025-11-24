@@ -1,0 +1,4 @@
+# Sprint Artifacts Directory
+# This directory contains sprint-related files created by the SM agent:
+# - sprint-status.yaml: Story/epic tracking
+# - parallel-boundaries.yaml: Independent work chunks

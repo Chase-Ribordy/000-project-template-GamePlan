@@ -1,0 +1,56 @@
+# Sprint Status Template
+# Copy and rename to sprint-status.yaml when starting a sprint
+# Updated by SM agent and ORC-EXE during execution
+
+sprint:
+  name: "Sprint 1"
+  goal: ""
+  start_date: ""
+  end_date: ""
+  status: "not_started"  # not_started, in_progress, completed
+
+# Epics in this sprint
+epics: []
+  # Example:
+  # - id: "epic-1"
+  #   title: "User Authentication"
+  #   status: "in_progress"
+  #   stories: ["1-1", "1-2", "1-3"]
+  #   progress: 33  # percentage
+
+# Stories in this sprint
+stories: []
+  # Example:
+  # - id: "1-1"
+  #   title: "User Login"
+  #   epic_id: "epic-1"
+  #   status: "completed"  # pending, in_progress, completed, blocked
+  #   pass: "first"  # first, second, third
+  #   assigned_to: ""
+  #   story_points: 3
+  #   acceptance_criteria:
+  #     - criterion: "User can login with email/password"
+  #       status: "satisfied"
+  #   dependencies: []
+  #   blocked_by: ""
+
+# Progress tracking
+progress:
+  total_stories: 0
+  completed_stories: 0
+  first_pass_complete: 0
+  second_pass_complete: 0
+  third_pass_complete: 0
+
+  current_pass: "first"  # first, second, third
+  current_chunk: 1
+  total_chunks: 0
+
+# Execution history
+history: []
+  # Example:
+  # - timestamp: "2025-11-23T10:00:00Z"
+  #   event: "story_completed"
+  #   story_id: "1-1"
+  #   pass: "first"
+  #   duration_minutes: 45

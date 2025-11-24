@@ -96,3 +96,16 @@ Best used at:
 - End of work session
 - Before switching to different work
 - When handing off to another person or AI session
+
+## To Continue on Another Device
+
+After `/handoff` completes:
+
+```
+1. Open Claude Code on web (phone/tablet/other computer)
+2. Navigate to the repository
+3. Run: /resume
+4. Follow the prompts
+```
+
+The `/resume` command reads `next-steps.md` and picks up where you left off.

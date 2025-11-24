@@ -77,11 +77,34 @@ Check .system/contracts/[component]-contract.md for:
 - Maintain functional connections (data, events)
 - Ensure no regression in functionality
 
-### 4. Validate
-- Playwright visual test
-- Check component renders correctly
-- Verify interactions still work
-- Screenshot for review queue
+### 4. Validate (Autonomous Playwright Testing)
+After building each component, validate autonomously:
+
+```
+1. mcp__playwright__browser_navigate to local app
+2. mcp__playwright__browser_click through component interactions
+3. mcp__playwright__browser_type to test form inputs
+4. mcp__playwright__browser_console_messages to check for errors
+5. mcp__playwright__browser_take_screenshot for visual record
+6. If errors found: fix and re-test
+7. If blocked: escalate to orc-exe
+```
+
+**Self-Correction Loop:**
+```
+build_component() -> test_with_playwright() ->
+  if errors:
+    analyze_console_messages()
+    apply_fix()
+    test_with_playwright()  # retry
+  else:
+    add_to_review_queue()
+```
+
+**Responsive Validation:**
+- Test at desktop (1200px+) and mobile (375px) widths
+- Use `mcp__playwright__browser_snapshot` for accessibility checks
+- Screenshot both viewports for review
 
 ## Review Queue Commands
 
@@ -110,13 +133,20 @@ agent: dev-second-pass
 pass: second
 story_id: [story-id]
 status: complete
+autonomous_tests:
+  playwright_ran: true
+  console_errors: 0
+  screenshots_taken: [list]
+  responsive_validated: true
 components_built:
   - name: login-form
     contract_compliant: true
     review_status: approved
+    playwright_tested: true
   - name: user-profile
     contract_compliant: true
     review_status: approved
+    playwright_tested: true
 output:
   files_created: [component files]
   files_modified: [integration files]
@@ -126,6 +156,7 @@ summary: |
   Second-pass component integration complete.
   All components reviewed and approved by operator.
   CSS follows namespace conventions.
+  Playwright validation passed.
 acceptance_criteria:
   AC1: polished
   AC2: polished
@@ -163,10 +194,13 @@ Second pass has MORE operator interaction than first pass:
 - Component screenshots
 
 ### MCP Tools
-- `playwright.browser_navigate` - View component in browser
-- `playwright.browser_take_screenshot` - Capture for review
-- `playwright.browser_snapshot` - Accessibility tree check
-- `component-registry.validate_integration` - Check conflicts
+- `mcp__playwright__browser_navigate` - View component in browser
+- `mcp__playwright__browser_click` - Test interactions
+- `mcp__playwright__browser_type` - Test form inputs
+- `mcp__playwright__browser_take_screenshot` - Capture for review
+- `mcp__playwright__browser_snapshot` - Accessibility tree check
+- `mcp__playwright__browser_console_messages` - Check for errors
+- `mcp__component-registry__validate_integration` - Check conflicts
 
 ## Success Criteria
 
