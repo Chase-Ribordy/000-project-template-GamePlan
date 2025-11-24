@@ -200,7 +200,6 @@ Second pass has MORE operator interaction than first pass:
 - `mcp__playwright__browser_take_screenshot` - Capture for review
 - `mcp__playwright__browser_snapshot` - Accessibility tree check
 - `mcp__playwright__browser_console_messages` - Check for errors
-- `mcp__component-registry__validate_integration` - Check conflicts
 
 ## Success Criteria
 
