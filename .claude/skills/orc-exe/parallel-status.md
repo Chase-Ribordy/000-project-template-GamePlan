@@ -327,20 +327,20 @@ for each terminal_a in active_terminals:
 
 ---
 
-## Separation from BMAD Status
+## Scope Clarification
 
-This skill is **completely separate** from BMAD's `/workflow-status`:
+This skill focuses on **parallel execution coordination**:
 
-| Aspect | BMAD `/workflow-status` | Orchestrator `*parallel-status` |
-|--------|------------------------|----------------------------------|
-| **Scope** | BMAD workflow phases (PRD, Architecture, Stories) | Parallel execution tracking across terminals |
-| **Purpose** | "What phase am I in?" | "What's happening in parallel right now?" |
-| **Data Source** | `.bmad/status.yaml` | `.system/parallel-work/*.yaml` |
-| **User** | Any agent following BMAD method | ORC-EXE only |
-| **Invocation** | `/workflow-status` | `*parallel-status` |
-| **Output** | Phase gates, next workflow steps | Terminal status, conflicts, suggestions |
+| Aspect | Description |
+|--------|-------------|
+| **Scope** | Parallel execution tracking across Task() agents |
+| **Purpose** | "What's happening in parallel right now?" |
+| **Data Source** | `.system/parallel-work/*.yaml`, `.system/contracts/*.yaml` |
+| **User** | ORC-EXE only |
+| **Invocation** | `*parallel-status` |
+| **Output** | Agent status, conflicts, suggestions |
 
-**Never mix the two**: This skill should not reference BMAD phases, epic status from `.bmad/epics/`, or story status from BMAD tracking. It focuses purely on orchestrator-level parallel execution coordination.
+This skill focuses purely on orchestrator-level parallel execution coordination via Task() spawned agents.
 
 ---
 

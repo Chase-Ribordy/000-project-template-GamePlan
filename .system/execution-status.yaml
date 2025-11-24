@@ -131,9 +131,9 @@ notes: |
   This execution-status.yaml file will be populated when you start working on stories.
 
   Quick start:
-  1. Use BMAD to create PRD, architecture, and stories (/pm, /architect, /create-epics-and-stories)
-  2. Run /dev-story [story-name] to start first pass
-  3. Run /integrate [prototype] to start second pass
-  4. Track progress automatically via autonomous skills
+  1. Run /refine to create PRD and architecture
+  2. Run /orc-exe to generate stories and start execution
+  3. Use *start to begin three-pass development
+  4. Track progress automatically via contracts
 
-  The progress-reporter skill will auto-update this file as components move through the workflow.
+  The system will auto-update this file as stories move through the workflow.

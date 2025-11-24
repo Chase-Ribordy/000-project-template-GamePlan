@@ -2,110 +2,93 @@
 
 **Isolation Level**: ORC-EXE only
 **Invocation**: Direct (not event-driven)
-**Purpose**: Delegate work to BMAD agents through top-down coordination
+**Purpose**: Delegate work to sub-agents through Task() spawning
 
 ## Overview
 
-This skill enables the ORC-EXE to coordinate BMAD agents (Dev, SM, Architect, etc.) through direct delegation rather than event-driven communication. It manages the handoff of work items, tracks agent assignments, and maintains coordination history.
+This skill enables ORC-EXE to coordinate sub-agents (Dev, SM, Architect, etc.) through Task() spawning rather than event-driven communication. It manages the handoff of work items, tracks agent assignments, and maintains coordination history.
 
 ## Invocation Pattern
 
 ```
-orc-exe → coordinate-agents.md → BMAD agent
+orc-exe → coordinate-agents.md → Task() sub-agent
 ```
 
-Unlike autonomous BMAD skills that emit/listen to events, this skill is directly invoked by orc-exe and operates synchronously.
+Sub-agents are spawned via Claude Code's Task tool and communicate results via contract files.
 
 ## Capabilities
 
 ### 1. Agent Delegation
-- **Select Agent**: Choose appropriate BMAD agent based on task type
+- **Select Agent**: Choose appropriate agent based on task type
 - **Prepare Context**: Package story, phase, and execution context for agent
-- **Handoff**: Transfer control to selected agent with clear instructions
-- **Return**: Receive results and update coordination log
+- **Spawn**: Create sub-agent via Task() with clear instructions
+- **Monitor**: Track completion via contract files
 
 ### 2. Agent Communication
-- **Status Queries**: Request status updates from agents
-- **Priority Updates**: Communicate priority changes to agents
-- **Dependency Alerts**: Notify agents of blocking dependencies
+- **Contract Files**: Agents write status to `.system/contracts/`
+- **Progress Updates**: Read contracts to monitor progress
+- **Dependency Alerts**: Include dependency info in agent prompts
 
 ### 3. Coordination Tracking
 - **Log Handoffs**: Record agent assignments in `.system/parallel-work/coordination-log.yaml`
-- **Track Progress**: Monitor agent work progress
+- **Track Progress**: Monitor agent work via contracts
 - **Capture Results**: Store agent outputs and decisions
 
 ## Task-to-Agent Mapping
 
-### BMAD Workflow Agents (Existing)
-
 ```yaml
 task_types:
   story_development:
-    agent: dev
-    command: /dev-story
-    context: [story_file, epic_context, tech_spec]
+    agent: dev-first-pass
+    persona: .system/agents/dev-first-pass.md
+    context: [story_file, epic_context, architecture]
 
-  component-integration:
-    agent: dev
-    command: /integrate
-    context: [component_contracts, design_system]
+  component_polish:
+    agent: dev-second-pass
+    persona: .system/agents/dev-second-pass.md
+    context: [component_contracts, first_pass_code]
+
+  bug_fixing:
+    agent: dev-third-pass
+    persona: .system/agents/dev-third-pass.md
+    context: [bug_list, component_code]
+
+  story_creation:
+    agent: sm
+    persona: .system/agents/sm.md
+    context: [prd, architecture]
 
   sprint_updates:
     agent: sm
-    command: /story-done, /story-ready
+    persona: .system/agents/sm.md
     context: [sprint_status, story_id]
 
   architecture_review:
     agent: architect
-    command: /architecture
+    persona: .system/agents/architect.md
     context: [tech_decisions, constraints]
 ```
-
-### Specialized Agents (New - via agent-selector)
-
-For specialized agents, use the **agent-selector** skill to automatically determine optimal agent assignment:
-
-```yaml
-specialized_task_types:
-  component_lifecycle:
-    determination: agent-selector
-    candidates: [integration-manager, validation-controller, contract-architect]
-    load_from: .system/agents/[layer]/[agent-name].md
-
-  story_execution:
-    determination: agent-selector
-    candidates: [development-executor, dev (BMAD)]
-    load_from: .system/agents/tactical/development-executor.md
-
-  dependency_analysis:
-    determination: agent-selector
-    candidates: [dependency-analyst]
-    load_from: .system/agents/support/dependency-analyst.md
-
-  testing:
-    determination: agent-selector
-    candidates: [testing-specialist, tea (BMAD)]
-    load_from: .system/agents/support/testing-specialist.md
-```
-
-**Note**: When coordinating specialized agents, first call agent-selector skill to get recommendation, then load agent persona from `.system/agents/` and execute task.
 
 ## Usage Example
 
 ```
-Operator: *coordinate dev
+Operator: *start (First Pass)
 ORC-EXE: [Loads coordinate-agents.md skill]
 
 Skill Process:
-1. Read current story from sprint-status.yaml
-2. Gather story context (epic, tech-spec, dependencies)
-3. Determine current phase (1st/2nd/3rd pass)
-4. Package handoff context
-5. Invoke BMAD dev agent with /dev-story
-6. Log coordination in coordination-log.yaml
-7. Return control to orc-exe when agent completes
+1. Read stories from docs/stories/
+2. Load parallel-boundaries.yaml for chunk info
+3. Identify parallelizable stories in current chunk
+4. For each story, spawn Task():
+   Task({
+     description: "Story 1-1: User Auth",
+     subagent_type: "general-purpose",
+     prompt: "[dev-first-pass persona + story context]"
+   })
+5. Monitor contracts for completion
+6. Report progress to operator
 
-Result: Story implemented, orc-exe suggests next action
+Result: Stories implemented in parallel, contracts track completion
 ```
 
 ## Coordination Log Format
@@ -113,106 +96,90 @@ Result: Story implemented, orc-exe suggests next action
 ```yaml
 coordinations:
   - timestamp: "2025-11-15T10:30:00Z"
-    session_id: "terminal-1"
-    agent: "dev"
-    command: "/dev-story"
+    session_id: "task-001"
+    agent: "dev-first-pass"
     story: "1-2-user-authentication"
     phase: "first-pass"
     status: "completed"
+    contract: ".system/contracts/story-1-2-completion.yaml"
     outcome: "Story implemented, tests passing"
 
   - timestamp: "2025-11-15T11:15:00Z"
-    session_id: "terminal-2"
-    agent: "sm"
-    command: "/story-done"
-    story: "1-2-user-authentication"
-    status: "completed"
-    outcome: "Sprint status updated: story marked DONE"
+    session_id: "task-002"
+    agent: "dev-first-pass"
+    story: "1-3-plant-data-model"
+    phase: "first-pass"
+    status: "in_progress"
+    contract: ".system/contracts/story-1-3-completion.yaml"
 ```
 
 ## Isolation Rules
 
 1. **Direct Invocation Only**: Only orc-exe can call this skill
-2. **No Event Emission**: Does not emit events to BMAD event system
-3. **Synchronous Operation**: Waits for agent completion before returning
-4. **Top-Down Flow**: orc-exe → skill → agent (never reversed)
+2. **No External Events**: Uses contract files, not event systems
+3. **Task-Based**: Spawns sub-agents via Task() tool
+4. **Top-Down Flow**: orc-exe → skill → Task() agent (never reversed)
 
-## Agent Assignment Workflow (Enhanced)
+## Agent Assignment Workflow
 
-### For BMAD Agents (Workflow-Based):
+### Standard Workflow:
 1. Identify task type (story development, sprint update, etc.)
-2. Select appropriate BMAD agent from task mapping
-3. Invoke via slash command (e.g., /dev-story)
-4. Log coordination in coordination-log.yaml
+2. Select appropriate agent from task mapping
+3. Load agent persona from `.system/agents/[agent-name].md`
+4. Spawn via Task() with persona + context
+5. Monitor contract file for completion
+6. Log coordination in coordination-log.yaml
 
-### For Specialized Agents (Intelligent Selection):
-1. Identify task type and context
-2. **Call agent-selector skill** with task characteristics:
-   - Task type (component-integration, validation, etc.)
-   - Complexity level (1-5)
-   - Current pass (first/second/third)
-   - Dependencies and risk level
-3. **Receive agent recommendation**:
-   - Selected agent (e.g., integration-manager)
-   - Confidence score
-   - Execution mode (manual/autonomous)
-   - Reasoning for selection
-4. **Load agent persona**: Read `.system/agents/[layer]/[agent-name].md`
-5. **Execute task** as the selected agent
-6. **Log assignment**: Update `.system/agents/active-agents.yaml` and `agent-assignments.yaml`
-7. **Track completion**: Return to orc-exe and update coordination-log.yaml
+### Parallel Execution:
+1. Load parallel-boundaries.yaml
+2. Identify independent stories in current chunk
+3. Spawn multiple Task() calls in single message (parallel)
+4. Monitor all contracts for completion
+5. Proceed when chunk complete
 
-### Example: Component Integration Assignment
+### Example: Story Development Assignment
 ```
-ORC-EXE identifies task: "Integrate login-form component"
+ORC-EXE identifies task: "Implement story 1-1-user-auth"
 
-Step 1: Call agent-selector skill
-  Input: {
-    task_type: "component-integration",
-    component: "login-form",
-    complexity: 3,
-    pass: "second",
-    risk: "medium"
-  }
+Step 1: Select agent
+  Agent: dev-first-pass
+  Persona: .system/agents/dev-first-pass.md
 
-Step 2: Receive recommendation
-  Output: {
-    selected_agent: "integration-manager",
-    confidence: 0.94,
-    mode: "autonomous",
-    reasoning: "Component integration specialist, autonomous capable"
-  }
+Step 2: Gather context
+  Story: docs/stories/1-1-user-auth.md
+  Architecture: docs/finalized-plan/architecture.md
+  Chunk: chunk-01 (from parallel-boundaries.yaml)
 
-Step 3: Load agent persona
-  Read: .system/agents/tactical/integration-manager.md
+Step 3: Spawn Task()
+  Task({
+    description: "Story 1-1: User Authentication",
+    subagent_type: "general-purpose",
+    prompt: "[dev-first-pass persona]\n[story context]\n[instructions]"
+  })
 
-Step 4: Execute task
-  As integration-manager: Integrate login-form component
+Step 4: Monitor contract
+  Watch: .system/contracts/story-1-1-completion.yaml
 
 Step 5: Log assignment
-  Update: .system/agents/active-agents.yaml
-  Update: .system/agents/agent-assignments.yaml
-
-Step 6: Return to orchestrator
-  Report completion and update coordination-log.yaml
+  Update: .system/parallel-work/coordination-log.yaml
 ```
 
 ## Integration Points
 
 **Reads**:
 - `docs/sprint-artifacts/sprint-status.yaml` (story queue)
+- `docs/sprint-artifacts/parallel-boundaries.yaml` (chunk definitions)
 - `.system/execution-status.yaml` (current phase)
-- `.system/parallel-work/active-sessions.yaml` (session context)
-- `.system/agents/agent-capabilities.yaml` (specialized agents)
-- `.system/agents/active-agents.yaml` (agent availability)
+- `.system/agents/*.md` (agent personas)
+- `.system/contracts/*.yaml` (completion status)
 
 **Writes**:
 - `.system/parallel-work/coordination-log.yaml` (delegation history)
-- `.system/agents/active-agents.yaml` (agent assignments)
-- `.system/agents/agent-assignments.yaml` (assignment decisions)
-- `.system/agents/handoff-history.yaml` (contract-based handoffs)
+- `.system/contracts/*.yaml` (via spawned agents)
 
-**Invokes**:
-- BMAD agents via slash commands (/dev-story, /story-done, etc.)
-- Specialized agents via persona loading (Read .system/agents/[layer]/[agent-name].md)
-- Agent-selector skill for intelligent assignment
+**Spawns**:
+- dev-first-pass agents via Task()
+- dev-second-pass agents via Task()
+- dev-third-pass agents via Task()
+- sm agent via Task()
+- architect agent via Task()

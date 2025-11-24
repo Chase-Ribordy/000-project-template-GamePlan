@@ -307,7 +307,7 @@ Operator: *approve user-profile "Good"
 ## Isolation Rules
 
 1. **Direct Invocation Only**: Only orc-exe can call this skill
-2. **No Event Emission**: Does not emit events to BMAD event system
+2. **Contract-Based**: Uses contract files for coordination
 3. **Synchronous Operation**: Queue operations complete immediately
 4. **File Ownership**: Orchestrator-exe owns `.system/review-queue.yaml`
 

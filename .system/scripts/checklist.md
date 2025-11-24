@@ -11,24 +11,13 @@
 - [ ] Document key architectural decisions
 
 ## MCP Configuration
-- [ ] **IMPORTANT**: Configure Claude Desktop with absolute path to component-registry.js
-  - Location: `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac)
-  - Run `/checklist` to get exact config to copy/paste
-  - Restart Claude Desktop after updating
-- [ ] Test component-registry connection: `node mcp-servers/component-registry.js`
-- [ ] Verify in Claude Desktop: Ask "What MCP tools do you have?"
+- [ ] Configure Claude Desktop/Code with Playwright MCP server
+- [ ] Test Playwright connection: Ask "What MCP tools do you have?"
 - [ ] Check MCP server logs for errors
-
-## Terminal Arrangement (4 terminals recommended)
-- [ ] Terminal 1: Primary development (main agent focus)
-- [ ] Terminal 2: Testing & validation
-- [ ] Terminal 3: Documentation & planning
-- [ ] Terminal 4: Git operations & deployment
 
 ## Workflow Preparation
 - [ ] Set overnight boundaries if running long sessions
-- [ ] Review BMAD workflow status: `/bmad:bmm:workflows:workflow-status`
-- [ ] Confirm notification system active (notify.py working)
+- [ ] Review execution status: `.system/execution-status.yaml`
 - [ ] Review last session's next-steps.md (if exists)
 
 ## Environment Check
@@ -40,10 +29,9 @@
 ## Template Structure Validation
 - [ ] Verify folder structure: `ls -la`
 - [ ] Check .claude/config/settings.json permissions
-- [ ] Confirm BMAD commands accessible: `/help`
-- [ ] Validate custom commands in .claude/commands/personal/
+- [ ] Validate custom commands in .claude/commands/
 
-## 🚀 GO HARD
+## GO HARD
 - [ ] Clear focus on today's goal
 - [ ] Ready to ship working code
 - [ ] Let's build!
@@ -53,17 +41,13 @@
 ## Documentation References
 
 ### Quick Links
-- **BMAD Quick Start**: `.bmad/bmm/docs/quick-start.md`
-- **Integration Guide**: `docs/integration-workflow.md`
-- **MCP Setup**: `docs/mcp-setup.md`
-- **Template Structure**: `README-STRUCTURE.md`
-- **Build Plan**: `README-BUILD-PLAN.md`
+- **Operator Guide**: `README.md`
+- **Agents**: `.system/agents/`
+- **Commands**: `.claude/commands/`
 
 ### Slash Commands Summary
-- **/pm** - Product manager (create PRD)
-- **/architect** - Architecture design
-- **/sm** - Scrum master (epics/stories)
-- **/dev** - Development implementation
-- **/integrate** - Shard & inject components
-- **/debug-css** - CSS/animation debugging
-- **/next-steps** - End session handoff
+- **/refine** - Idea pipeline (discovery → planning)
+- **/orc-exe** - Execution pipeline (three-pass build)
+- **/resume** - Pick up where you left off
+- **/handoff** - Save and push state
+- **/push-to-github** - Quick checkpoint save

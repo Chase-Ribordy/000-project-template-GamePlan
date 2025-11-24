@@ -251,13 +251,13 @@ Combined Guidance:  "Second pass + clear UX spec = autonomous for speed"
 
 ### CRITICAL: ORC-EXE Only
 - This skill is isolated to orc-exe domain
-- NOT invoked by BMAD agents (dev, pm, architect, etc.)
+- NOT invoked by other agents directly
 - NOT event-driven (direct invocation only)
 
-### Read-Only for BMAD Files
+### Read-Only for Status Files
 - Read `.system/execution-status.yaml` (status only)
 - Read sprint/epic files (analysis only)
-- No modifications to BMAD-managed files
+- No modifications to status-managed files
 
 ### Advisory Only
 - Returns recommendations, not commands
@@ -266,7 +266,7 @@ Combined Guidance:  "Second pass + clear UX spec = autonomous for speed"
 - Soft guidance, not rigid rules
 
 ### Complement, Don't Conflict
-- Works alongside pass-orchestration.md (event-driven)
+- Works alongside other orc-exe skills
 - Enhances decision-support.md (mode selection)
 - Doesn't override or replace existing systems
 

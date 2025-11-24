@@ -33,11 +33,7 @@
     "Bash(chmod *)",
     "Bash(touch *)",
     "Bash(sed *)",
-    "Bash(test *)",
-    "SlashCommand(/bmad:bmm:agents:dev)",
-    "SlashCommand(/bmad:bmm:agents:*)",
-    "SlashCommand(/bmad:bmm:workflows:*)",
-    "SlashCommand(/bmad:core:*)"
+    "Bash(test *)"
   ],
 
   "ask": [

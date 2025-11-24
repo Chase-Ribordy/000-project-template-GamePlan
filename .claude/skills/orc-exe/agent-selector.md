@@ -7,37 +7,39 @@ Automatically select the optimal agent for a given task based on multi-criteria 
 You are the **Agent Selector**, a decision-making specialist within the orc-exe system. Your role is to analyze tasks and match them with the most appropriate agent based on capabilities, availability, and context.
 
 ## Core Responsibilities
-1. Load agent capabilities matrix from `.system/agents/agent-capabilities.yaml`
+1. Load agent capabilities from `.system/agents/*.md`
 2. Analyze task characteristics (type, complexity, dependencies, pass, risk)
-3. Score all candidate agents using multi-criteria decision matrix
+3. Score candidate agents using multi-criteria decision matrix
 4. Select optimal agent with reasoning
 5. Log assignment decision to `.system/agents/agent-assignments.yaml`
-6. Generate ready-to-execute terminal prompt with agent specification
+6. Generate ready-to-execute Task() prompt
 
 ## Workflow
 
 ### Step 1: Load Agent Capabilities
 ```
-Read: .system/agents/agent-capabilities.yaml
-Parse: All agents, task_mappings, selection_criteria
+Read: .system/agents/dev-first-pass.md
+Read: .system/agents/dev-second-pass.md
+Read: .system/agents/dev-third-pass.md
+Read: .system/agents/sm.md
+Read: .system/agents/architect.md
 Check: .system/agents/active-agents.yaml for current assignments
 ```
 
 ### Step 2: Identify Task Type
 Analyze the task to determine its primary type:
-- **Component Lifecycle**: component-integration, component-validation, prototype_sharding, contract_generation
-- **Development**: story_implementation, feature_development, bug_fixing, refactoring
-- **Analysis**: dependency_analysis, capacity_planning, sprint_batch_planning
-- **Testing**: test_generation, sandbox-testing
-- **Coordination**: sprint_execution, parallel_work_coordination
+- **Story Development**: story_implementation (first pass)
+- **Component Polish**: component_building (second pass)
+- **Bug Fixing**: bug_fix, polish (third pass)
+- **Story Creation**: story_generation, epic_creation
+- **Architecture**: architecture_design, tech_decisions
 
 ### Step 3: Extract Task Context
 Gather critical context for scoring:
 - **Complexity Level**: trivial (1), simple (2), moderate (3), complex (4), critical (5)
 - **Current Pass**: first (backend-first), second (UI polish), third (production hardening)
-- **Dependencies**: List of dependencies that affect parallelization
-- **Risk Level**: From decision-support skill (low/medium/high)
-- **Execution Mode Preference**: manual, supervised, autonomous, fully_autonomous
+- **Dependencies**: List of dependencies that affect execution
+- **Risk Level**: low/medium/high
 - **Story Pattern**: new_feature, enhancement, bug_fix, refactor
 
 ### Step 4: Score Candidate Agents
@@ -46,60 +48,53 @@ For each candidate agent, calculate weighted score:
 ```
 Total Score = (task_type_match × 0.35) +
               (complexity_handling × 0.25) +
-              (execution_mode_fit × 0.20) +
-              (skill_access × 0.15) +
-              (current_availability × 0.05) +
-              (pass_awareness × 0.05)
+              (pass_alignment × 0.20) +
+              (capability_fit × 0.15) +
+              (availability × 0.05)
 ```
 
 **Scoring Criteria:**
 
 **1. Task Type Match (35% weight)**
-- Perfect match (task type in agent's specializations): 1.0
+- Perfect match (task type is agent's specialization): 1.0
 - Partial match (related task type): 0.6
 - General capability: 0.3
 - No match: 0.0
 
 **2. Complexity Handling (25% weight)**
-Based on agent layer and execution mode:
-- Strategic agents: Best for complexity 4-5
-- Tactical agents: Best for complexity 2-4
-- Support agents: Best for complexity 1-3
+Based on agent design:
+- dev-first-pass: Best for complexity 2-4 (skeleton builds)
+- dev-second-pass: Best for complexity 2-3 (polish work)
+- dev-third-pass: Best for complexity 1-3 (bug fixes)
+- sm: Best for complexity 2-4 (story creation)
 Score = 1.0 if in sweet spot, decreases with distance
 
-**3. Execution Mode Fit (20% weight)**
-Match task's required execution mode to agent's capabilities:
-- Exact match: 1.0
-- Compatible mode: 0.7
-- Requires escalation: 0.4
-- Incompatible: 0.0
+**3. Pass Alignment (20% weight)**
+Match task's pass to agent's purpose:
+- dev-first-pass: first pass = 1.0
+- dev-second-pass: second pass = 1.0
+- dev-third-pass: third pass = 1.0
+- Wrong pass = 0.3
 
-**4. Skill Access (15% weight)**
-Does agent have access to required skills?
-- All required skills accessible: 1.0
-- Most skills accessible (>75%): 0.7
-- Some skills accessible (>50%): 0.5
-- Few skills accessible (<50%): 0.2
+**4. Capability Fit (15% weight)**
+Does agent have required capabilities?
+- All required capabilities: 1.0
+- Most capabilities (>75%): 0.7
+- Some capabilities (>50%): 0.5
+- Few capabilities (<50%): 0.2
 
-**5. Current Availability (5% weight)**
+**5. Availability (5% weight)**
 Check `.system/agents/active-agents.yaml`:
 - Agent not currently assigned: 1.0
-- Agent assigned but can handle parallel: 0.5
+- Agent can handle parallel work: 0.5
 - Agent at capacity: 0.0
-
-**6. Pass Awareness (5% weight)**
-Agent effectiveness in current pass:
-- First Pass: Backend-focused agents score higher
-- Second Pass: Integration/UI agents score higher
-- Third Pass: Validation/testing agents score higher
 
 ### Step 5: Select Optimal Agent
 1. Rank agents by total score (highest first)
 2. Select top-scoring agent
 3. If tie, prefer:
    - Agent with fewer active assignments
-   - Agent with better historical success rate
-   - Tactical layer over Support layer (for execution tasks)
+   - More specialized agent over general
 
 ### Step 6: Generate Assignment Decision
 Create assignment record structure:
@@ -111,152 +106,130 @@ timestamp: [current timestamp]
 task:
   type: [task_type]
   story: [story_id]
-  component: [component_name, if applicable]
   complexity: [1-5]
   pass: [first/second/third]
 
 selection_process:
   candidates: [list of agents considered]
   scores:
-    agent-name-1: [score]
-    agent-name-2: [score]
+    dev-first-pass: [score]
+    dev-second-pass: [score]
   selected: [chosen agent]
   reasoning: [1-2 sentence explanation]
 
 assignment:
   agent: [selected agent]
-  terminal: [terminal-id, if known]
   mode: [execution mode]
-  skills_provided: [list of skills agent can access]
+  persona: [path to agent .md file]
 ```
 
 ### Step 7: Log Assignment
 Append assignment record to `.system/agents/agent-assignments.yaml`
 Update `.system/agents/active-agents.yaml` if immediately assigned
 
-### Step 8: Generate Terminal Prompt
-Create ready-to-execute prompt for operator:
+### Step 8: Generate Task() Prompt
+Create ready-to-execute Task() call:
 
-```
-================================
-TERMINAL [N]: [AGENT-NAME]
-================================
-
-LOAD AGENT:
-Read and embody: .system/agents/[layer]/[agent-name].md
+```javascript
+Task({
+  description: "[Story ID]: [Story Title]",
+  subagent_type: "general-purpose",
+  prompt: `
+You are [AGENT-NAME]. Read and embody .system/agents/[agent-name].md.
 
 TASK: [task type]
 Story: [story-id]
-[Additional context]
+Pass: [first/second/third]
 
-COORDINATION FILE:
-[path to coordination.md or task spec]
+CONTEXT:
+- Story file: docs/stories/[story-id].md
+- Architecture: docs/finalized-plan/architecture.md
 
-EXECUTION MODE: [mode]
+EXECUTION:
+1. Read story file completely
+2. Implement all acceptance criteria
+3. Write tests
+4. Write completion contract to .system/contracts/story-[id]-completion.yaml
 
-EXPECTED OUTPUT:
-- [deliverable 1]
-- [deliverable 2]
-- Update .system/agents/active-agents.yaml on completion
-
-================================
-COPY-PASTE READY PROMPT:
-================================
-Read and embody .system/agents/[layer]/[agent-name].md. Then execute the task defined in [coordination file path]. Mode: [mode]. Story: [story-id].
-================================
+BEGIN EXECUTION.
+`
+})
 ```
 
 ## Decision Logic Examples
 
-### Example 1: Component Integration Task
-```
-Task: Integrate login-form component into production
-Complexity: 3 (moderate)
-Pass: Second
-Risk: Medium
-Dependencies: auth-service component
-
-Analysis:
-- Task type: component-integration
-- Primary candidates: integration-manager, development-executor
-- Required skills: component-integration, MCP validation
-
-Scoring:
-  integration-manager:
-    - task_type_match: 1.0 (perfect match)
-    - complexity_handling: 1.0 (tactical, moderate complexity)
-    - execution_mode_fit: 1.0 (autonomous capable)
-    - skill_access: 1.0 (all required skills)
-    - availability: 1.0 (not assigned)
-    - pass_awareness: 1.0 (second pass, integration focus)
-    Total: 1.0
-
-  development-executor:
-    - task_type_match: 0.3 (general capability)
-    - complexity_handling: 0.8 (can handle, not specialized)
-    - execution_mode_fit: 0.7 (needs supervision)
-    - skill_access: 0.5 (some skills via BMAD)
-    - availability: 1.0 (not assigned)
-    - pass_awareness: 0.6 (less effective in second pass)
-    Total: 0.54
-
-Selection: integration-manager (1.0 > 0.54)
-Reasoning: "Perfect task type match with autonomous capability for component integration. All required skills accessible and optimal for second pass UI integration work."
-```
-
-### Example 2: Story Implementation Task
+### Example 1: First Pass Story Implementation
 ```
 Task: Implement user authentication story
 Complexity: 4 (complex)
 Pass: First
-Risk: High
+Risk: Medium
 Dependencies: None (foundation work)
 
 Analysis:
 - Task type: story_implementation
-- Primary candidates: development-executor
-- Required skills: dev-story workflow, test writing
+- Primary candidates: dev-first-pass
 
 Scoring:
-  development-executor:
+  dev-first-pass:
     - task_type_match: 1.0 (perfect match)
-    - complexity_handling: 1.0 (tactical, complex work)
-    - execution_mode_fit: 0.7 (manual recommended for high risk)
-    - skill_access: 1.0 (BMAD dev workflows)
+    - complexity_handling: 1.0 (within 2-4 range)
+    - pass_alignment: 1.0 (first pass agent, first pass task)
+    - capability_fit: 1.0 (backend-first focus)
     - availability: 1.0 (not assigned)
-    - pass_awareness: 1.0 (first pass, backend focus)
-    Total: 0.965
+    Total: 1.0
 
-Selection: development-executor
-Mode: manual (overridden from autonomous due to high risk + first pass)
-Reasoning: "Complex foundation work in first pass requires manual execution with development-executor wrapping BMAD dev workflows."
+Selection: dev-first-pass
+Reasoning: "First pass story implementation is the exact purpose of dev-first-pass agent."
 ```
 
-### Example 3: Dependency Analysis Task
+### Example 2: Component Polish Task
 ```
-Task: Analyze story dependencies for batch planning
+Task: Polish login-form component
+Complexity: 3 (moderate)
+Pass: Second
+Risk: Low
+Dependencies: first-pass skeleton complete
+
+Analysis:
+- Task type: component_building
+- Primary candidates: dev-second-pass
+
+Scoring:
+  dev-second-pass:
+    - task_type_match: 1.0 (perfect match)
+    - complexity_handling: 1.0 (within 2-3 range)
+    - pass_alignment: 1.0 (second pass agent, second pass task)
+    - capability_fit: 1.0 (UI polish focus)
+    - availability: 1.0 (not assigned)
+    Total: 1.0
+
+Selection: dev-second-pass
+Reasoning: "Component polish in second pass is the exact purpose of dev-second-pass agent."
+```
+
+### Example 3: Bug Fix Task
+```
+Task: Fix login validation bug
 Complexity: 2 (simple)
-Pass: N/A (planning phase)
+Pass: Third
 Risk: Low
 
 Analysis:
-- Task type: dependency_analysis
-- Primary candidates: dependency-analyst, resource-allocator
-- Required skills: sprint-batch-analyzer
+- Task type: bug_fix
+- Primary candidates: dev-third-pass
 
 Scoring:
-  dependency-analyst:
+  dev-third-pass:
     - task_type_match: 1.0 (perfect match)
-    - complexity_handling: 1.0 (support layer, simple task)
-    - execution_mode_fit: 1.0 (advisory mode)
-    - skill_access: 1.0 (sprint-batch-analyzer)
+    - complexity_handling: 1.0 (within 1-3 range)
+    - pass_alignment: 1.0 (third pass agent, third pass task)
+    - capability_fit: 1.0 (bug fix focus)
     - availability: 1.0 (not assigned)
-    - pass_awareness: 0.5 (N/A for planning)
-    Total: 0.975
+    Total: 1.0
 
-Selection: dependency-analyst
-Mode: advisory
-Reasoning: "Specialized for dependency graph construction and sequencing analysis. Returns recommendations to orc-exe."
+Selection: dev-third-pass
+Reasoning: "Bug fixing in third pass is the exact purpose of dev-third-pass agent."
 ```
 
 ## Integration with ORC-EXE
@@ -266,7 +239,6 @@ Reasoning: "Specialized for dependency graph construction and sequencing analysi
 2. **New Story Ready**: Story marked ready, needs agent assignment
 3. **Agent Completion**: Previous agent finished, assign next task
 4. **Parallel Batch Planning**: Assign agents to multiple parallel stories
-5. **Operator Request**: Operator asks "which agent should handle X?"
 
 ### How Orchestrator Calls This Skill:
 ```
@@ -275,8 +247,8 @@ Orchestrator workflow:
 2. Identify next task(s)
 3. FOR EACH task:
    - Call agent-selector skill
-   - Receive agent assignment + prompt
-   - Display to operator or auto-assign
+   - Receive agent assignment + Task() prompt
+   - Execute Task() or display to operator
 4. Track assignments in active-agents.yaml
 ```
 
@@ -284,14 +256,11 @@ Orchestrator workflow:
 Return structured recommendation:
 ```json
 {
-  "selected_agent": "integration-manager",
-  "agent_layer": "tactical",
-  "agent_location": ".system/agents/tactical/integration-manager.md",
-  "execution_mode": "autonomous",
-  "confidence_score": 0.92,
-  "reasoning": "Perfect task type match with autonomous capability...",
-  "terminal_prompt": "[ready-to-paste command]",
-  "skills_available": ["component-integration", "contract-orchestrator"],
+  "selected_agent": "dev-first-pass",
+  "agent_persona": ".system/agents/dev-first-pass.md",
+  "confidence_score": 0.95,
+  "reasoning": "First pass story implementation matches agent purpose...",
+  "task_prompt": "[ready-to-execute Task() call]",
   "assignment_id": "assign-042"
 }
 ```
@@ -300,42 +269,29 @@ Return structured recommendation:
 
 ### No Suitable Agent Found (all scores < 0.5):
 - Escalate to orc-exe
-- Recommend: Break down task or use general development-executor
-- Log issue for future agent creation consideration
+- Recommend: Break down task into smaller pieces
+- Log issue for review
 
 ### Agent Already Assigned:
 - Check if agent can handle parallel tasks
-- If not, recommend queueing or assigning backup agent
-- Consider splitting task across multiple agents
+- If not, recommend queueing or waiting
+- Consider Task() concurrency limits
 
 ### Missing Task Type:
-- Default to development-executor (general capability)
-- Log new task type for future capabilities matrix update
-- Recommend manual mode for safety
-
-## Performance Optimization
-
-### Caching:
-- Cache agent-capabilities.yaml in memory
-- Only reload if file timestamp changes
-- Cache active-agents.yaml for availability checks
-
-### Batch Assignments:
-- Can score multiple tasks in parallel
-- Optimize terminal allocation across batch
-- Consider agent workload balancing
+- Default to dev-first-pass (general capability)
+- Log new task type for future consideration
+- Recommend manual review
 
 ## Success Criteria
-- Agent assignment completed in <2 seconds
+- Agent assignment completed quickly
 - Confidence score >0.7 for selected agent
 - Assignment logged to agent-assignments.yaml
-- Terminal prompt generated and ready to execute
-- Operator can immediately copy-paste and run
+- Task() prompt generated and ready to execute
 
 ## Escalation Rules
 - If confidence score <0.5: Escalate to operator with recommendations
-- If no suitable agent: Recommend task breakdown or BMAD workflow
-- If critical task (complexity 5): Always recommend manual mode + operator approval
+- If no suitable agent: Recommend task breakdown
+- If critical task (complexity 5): Recommend operator oversight
 
 ---
 
@@ -343,26 +299,30 @@ Return structured recommendation:
 
 **Operator in orc-exe session:**
 ```
-Orchestrator: "Next task: Integrate signup-form component"
+Orchestrator: "Next task: Implement user authentication"
 
 [Calls agent-selector skill internally]
 
 Orchestrator Display:
 "
-RECOMMENDED AGENT: Integration Manager
-Confidence: 94%
-Mode: Autonomous
-Reasoning: Component integration specialist, second pass optimal
+RECOMMENDED AGENT: dev-first-pass
+Confidence: 95%
+Reasoning: First pass skeleton build matches agent specialization
 
-Terminal 2 Ready:
-Copy-paste: Read and embody .system/agents/tactical/integration-manager.md. Then integrate signup-form component per .system/parallel-work/coordination-terminal-2.md. Mode: autonomous.
+Ready to spawn Task():
+  Task({
+    description: "Story 1-1: User Authentication",
+    subagent_type: "general-purpose",
+    prompt: "[dev-first-pass + context]"
+  })
+
+Proceed? (Y/n)
 "
 ```
 
 ---
 
 ## Notes
-- This skill is isolated to orc-exe (not event-driven, not shared with other agents)
-- Decision logic can be tuned based on assignment outcomes in agent-assignments.yaml
-- Future enhancement: Machine learning on historical assignment success rates
-- Works seamlessly with existing decision-support skill for risk assessment integration
+- This skill is isolated to orc-exe (not shared with other agents)
+- Decision logic can be tuned based on assignment outcomes
+- Works with contract-based coordination system

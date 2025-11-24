@@ -925,14 +925,13 @@ Session closed successfully.
 
 ### ORC-EXE Only
 - This skill runs exclusively in the ORC-EXE isolation layer
-- Does NOT emit events to BMAD event system
-- Does NOT invoke BMAD agents (provides recommendations only)
+- Provides recommendations only (does not execute)
 - Synchronous operation with real-time monitoring
 
 ### Top-Down Flow Only
 - Orchestrator → Parallel Coordinator (allowed)
 - Parallel Coordinator → Orchestrator (return values, recommendations)
-- Parallel Coordinator → BMAD agents (NOT allowed, operator invokes)
+- Parallel Coordinator → Task() agents (via orc-exe only)
 - Parallel Coordinator → Session files (read/write allowed)
 
 ### No Side Effects on Code
