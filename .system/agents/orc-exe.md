@@ -405,9 +405,20 @@ async function monitorFirstPass(storyIds) {
       questions: questions.length
     });
 
-    // Package questions if any
-    if (questions.length > 0) {
+    // BATCHED QUESTION HANDLING
+    // Only interrupt operator if:
+    // - 30+ minutes have passed since last batch, OR
+    // - 5+ questions accumulated, OR
+    // - Agent is blocked (status: 'blocked')
+    const shouldBatchQuestions = (
+      timeSinceLastBatch() > 30 * 60 * 1000 || // 30 min
+      questions.length >= 5 ||
+      blocked.length > 0  // Blocked agents need immediate attention
+    );
+
+    if (shouldBatchQuestions && questions.length > 0) {
       packageQuestionsForOperator(questions);
+      recordBatchTimestamp();
     }
 
     // Check if all complete
@@ -736,45 +747,142 @@ BEGIN EXECUTION
 
 ## Third Pass Execution
 
-### Autonomous Bulk-Fix Workflow
+### NEW Philosophy: Autonomous Technical Validation + Operator UX Validation
 
-Third Pass executes autonomously after Second Pass completion. The pattern is:
-**Issues → Epics/Stories → Parallel Task() Agents → Completion**
+**Key Insight:** Operator doesn't care about technical bugs. They care about USER EXPERIENCE and VALUE DELIVERY.
+
+```
+THIRD PASS = AUTONOMOUS TECHNICAL POLISH + OPERATOR UX VALIDATION
+
+Technical bugs (console errors, broken links, test failures):
+  → Eliminated autonomously by Playwright validation
+
+Operator role:
+  → Test as END USER
+  → Validate features deliver value
+  → Ensure UX feels right
+```
+
+### Workflow
 
 ```
 Auto-transition from Second Pass OR *start (Third Pass)
   │
-  ├─→ ISSUE COLLECTION
-  │     - Operator provides issue list (features/bugs) as free text
-  │     - OR auto-gathered from Second Pass validation failures
-  │     - Example: "Login misaligned, dashboard refresh broken, dark mode missing"
+  ├─→ AUTONOMOUS TECHNICAL VALIDATION
+  │     ├─→ Spawn dev-third-pass agents (parallel)
+  │     ├─→ Each agent runs comprehensive Playwright tests:
+  │     │     - All user flows (login → feature → logout)
+  │     │     - Console error detection
+  │     │     - Broken link detection
+  │     │     - Form validation errors
+  │     │     - Responsive layout issues
+  │     │     - Accessibility violations
+  │     │
+  │     ├─→ Agents FIX all technical issues autonomously:
+  │     │     - No operator involvement
+  │     │     - Validate fix with Playwright
+  │     │     - Regression test
+  │     │     - Write contract when clean
+  │     │
+  │     └─→ Output: Technically clean application
+  │           - Zero console errors
+  │           - All tests pass
+  │           - No broken functionality
   │
-  ├─→ AUTO-CONVERSION TO EPICS/STORIES
-  │     - ORC-EXE parses issue list automatically
-  │     - Creates structured epics/stories format
-  │     - Groups related issues by component/feature
+  ├─→ CHECKPOINT: READY FOR OPERATOR UX VALIDATION
+  │     │
+  │     ├─→ python notify.py pass_3_complete "Technical validation complete"
+  │     │
+  │     └─→ Display to operator:
+  │         "═══════════════════════════════════════════
+  │          THIRD PASS: Technical Validation Complete
+  │          ═══════════════════════════════════════════
   │
-  ├─→ PARALLEL AGENT SPAWNING
-  │     - Spawn dev-third-pass agents via Task() in parallel
-  │     - Each agent receives issue batch + validation requirements
-  │     - Agents work autonomously with minimal operator input
+  │          All technical bugs eliminated autonomously:
+  │            ✓ Console errors: 0
+  │            ✓ Tests passing: 100%
+  │            ✓ Playwright validation: Clean
   │
-  ├─→ AUTONOMOUS FIX EXECUTION
-  │     - Each agent: Fix → Playwright validate → Contract complete
-  │     - Regression testing per fix (Playwright MCP)
-  │     - Completion contracts track progress automatically
+  │          NEXT: Your turn to test as END USER
+  │          ═══════════════════════════════════════════
   │
-  ├─→ FINAL REGRESSION SWEEP
-  │     - Full Playwright integration test
-  │     - Verify no regressions across all fixes
+  │          Focus on:
+  │            - Does this deliver value?
+  │            - Is the UX intuitive?
+  │            - Do features feel complete?
+  │            - Would users be satisfied?
   │
-  └─→ FINAL QA GATE
-        ├─→ Display completion summary
-        ├─→ Request final operator approval
-        └─→ PROJECT COMPLETE
+  │          NOT on:
+  │            - Technical bugs (already fixed)
+  │            - Console errors (already clean)
+  │            - Test coverage (already validated)
+  │
+  │          Open the app and use it like a user would.
+  │          When done, report your findings.
+  │          ═══════════════════════════════════════════"
+  │
+  ├─→ OPERATOR UX VALIDATION SESSION
+  │     │
+  │     ├─→ Operator uses app as end user
+  │     │     - Tests real user workflows
+  │     │     - Evaluates feature completeness
+  │     │     - Assesses UX quality
+  │     │     - Checks value delivery
+  │     │
+  │     └─→ Operator reports findings (if any):
+  │         Example: "Login flow feels clunky - too many steps"
+  │         Example: "Dashboard doesn't show most important info first"
+  │         Example: "Feature X works but feels incomplete"
+  │
+  ├─→ IF OPERATOR HAS UX FEEDBACK:
+  │     │
+  │     ├─→ ORC converts feedback to UX improvement stories
+  │     │
+  │     ├─→ Spawn dev agents to implement improvements
+  │     │     (Same autonomous process: implement → validate → complete)
+  │     │
+  │     └─→ Loop back to operator UX validation
+  │
+  └─→ OPERATOR APPROVAL: PRODUCTION READY
+        │
+        ├─→ Operator: "This delivers value. Ship it."
+        │
+        ├─→ python notify.py sprint_complete
+        │
+        └─→ Display:
+            "═══════════════════════════════════════════
+             PROJECT COMPLETE - PRODUCTION READY
+             ═══════════════════════════════════════════
+
+             ✓ All features implemented
+             ✓ Technical validation: Clean
+             ✓ Operator UX validation: Approved
+             ✓ Ready for deployment
+
+             Next steps:
+               1. Review docs/initial-planning/manual.md
+               2. Complete manual deployment tasks
+               3. Deploy to production
+
+             Congratulations! 🚀
+             ═══════════════════════════════════════════"
 ```
 
-> **NOTE:** For manual debugging intervention, use `/personal` slash commands in `.claude/commands/personal/`
+### Operator Experience Comparison
+
+**OLD (Bug Hunting):**
+- Operator tests app
+- Operator lists all bugs found
+- Operator worries about: "Did I find everything?"
+- Operator focuses on: Technical correctness
+
+**NEW (UX Validation):**
+- Agents eliminate technical bugs autonomously
+- Operator tests as END USER
+- Operator focuses on: "Does this deliver value?"
+- Operator evaluates: User experience quality
+
+**Result:** Operator focuses on what matters (value, UX), not technical details.
 
 ### Dev-Third-Pass Sub-Agent Template
 
@@ -905,39 +1013,80 @@ If Playwright detects issues:
 
 ---
 
-## /clear Checkpoint Recommendations
+## Automatic Context Management
 
-### Strategic Context Window Management
+### Strategy: Contract-Based State Persistence
 
-Recommend `/clear` at:
-- After each chunk completion (First Pass)
-- After significant component batch (Second Pass)
-- Before starting Third Pass
-- Whenever context exceeds ~50% usage
+**Core Principle:** All execution state lives in contracts, not conversation context. This enables seamless /clear at any time.
 
-### Checkpoint Protocol
+### Context Management Protocol
 
 ```
-*checkpoint
+AFTER EACH CHUNK/PASS COMPLETION:
   │
-  ├─→ Save current state to contracts
-  │     - Active work status
-  │     - Queue state
-  │     - Progress metrics
+  ├─→ Write comprehensive state to contracts:
+  │     - .system/contracts/checkpoint-[timestamp].yaml
+  │     - sprint-status.yaml (updated)
+  │     - All story completion contracts
   │
-  ├─→ Display checkpoint summary:
-  │     "CHECKPOINT READY
+  ├─→ Display to operator:
+  │     "CHECKPOINT: [Pass/Chunk] Complete
   │
-  │      State saved to contracts.
-  │      Recommend running /clear now.
+  │      Progress saved to contracts.
+  │      Running /clear now for optimal performance..."
   │
-  │      To resume after /clear:
-  │      1. Activate ORC-EXE
-  │      2. Run *resume
+  ├─→ AUTOMATICALLY trigger /clear
+  │     (operator doesn't need to remember)
   │
-  │      Current progress will be restored from contracts."
+  └─→ After /clear, resume from contracts:
+      - Read all .system/contracts/*.yaml
+      - Rebuild execution state
+      - Continue seamlessly
+```
+
+### Checkpoint Contract Format
+
+```yaml
+# .system/contracts/checkpoint-pass-1-chunk-2.yaml
+checkpoint_type: chunk_complete
+pass: first
+chunk_id: 2
+timestamp: "2025-01-15T16:30:00Z"
+stories_completed: ["1-1", "1-2", "1-3", "1-4"]
+stories_remaining: ["1-5", "1-6", "2-1", "2-2"]
+next_action: "spawn_chunk_3"
+questions_pending: []
+context_cleared: true
+```
+
+### Operator Experience
+
+**Before (Manual):**
+- "Should I run /clear?"
+- "Did I save state?"
+- "Where was I?"
+
+**After (Automatic):**
+- Checkpoint happens automatically
+- /clear triggered when optimal
+- Resume is seamless
+- Operator never thinks about context
+
+### Resume After /clear
+
+```
+*resume (or *start)
   │
-  └─→ Wait for operator to run /clear
+  ├─→ Scan .system/contracts/ for checkpoint files
+  │
+  ├─→ Load most recent checkpoint
+  │
+  ├─→ Display:
+  │     "Resuming from checkpoint: Pass 1, Chunk 2 complete
+  │      Next: Spawn agents for Chunk 3
+  │      Continue? [Y]"
+  │
+  └─→ Spawn next batch of agents automatically
 ```
 
 ---

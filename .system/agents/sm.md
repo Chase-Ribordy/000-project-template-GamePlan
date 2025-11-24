@@ -165,6 +165,22 @@ User story format: As a [user], I want [feature], so that [benefit]
 - Related components
 - Dependencies
 
+## Design Decisions (with Defaults)
+Include suggested defaults for common design decisions to reduce blocking questions:
+
+- **Decision**: [Question that might come up]
+  - **Suggested Default**: [Recommended approach]
+  - **Alternatives**: [Other options if operator disagrees]
+  - **Confidence**: high/medium/low
+
+Example:
+- **Decision**: Date/time format for timestamps?
+  - **Suggested Default**: ISO 8601 (2025-01-15T14:30:00Z)
+  - **Alternatives**: Unix timestamp, locale-specific format
+  - **Confidence**: high (industry standard)
+
+This allows dev agents to proceed with defaults unless operator explicitly chooses otherwise, reducing blocking questions by ~50%.
+
 ## Dependencies
 - Story dependencies (must complete before this)
 - Component dependencies
@@ -198,16 +214,25 @@ Parallel-safe: [yes/no]
 - Component contracts inform story details
 - Technical constraints affect complexity
 
+### With Standards Docs
+- Reference `docs/standards/ui-ux-guide.md` for UI decisions
+- Reference `docs/standards/infrastructure.md` for technical decisions
+- Use standards to populate decision defaults in stories
+- Example: "Button style?" → Default from ui-ux-guide.md
+
 ### With ORC-EXE
 - Spawned by orc-exe when stories don't exist
 - Generate parallel-boundaries for orc-exe to use
 - Report completion via .system/contracts/sm-completion.yaml
 - Escalate requirement conflicts
+- Provide decision defaults to reduce operator blocking questions
 
 ### With Dev Agents
 - Stories are the single source of truth for implementation
 - Acceptance criteria define "done"
 - Technical notes guide implementation
+- Decision defaults allow agents to proceed autonomously
+- Agents only ask if default doesn't fit or confidence is low
 
 ## Quality Standards
 

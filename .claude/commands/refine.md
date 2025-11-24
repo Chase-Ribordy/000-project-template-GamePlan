@@ -209,7 +209,7 @@ Tasks that require human action (not automatable by AI agents).
 
 ### Step 4: Generate Finalized Planning Docs (Phase 3)
 
-Spawn PM and Architect agents to create execution-ready docs:
+Spawn PM and Architect agents **IN PARALLEL** to create execution-ready docs:
 
 ```
 docs/finalized-plan/
@@ -217,8 +217,12 @@ docs/finalized-plan/
 └── architecture.md # Technical Architecture
 ```
 
-#### Spawn PM Agent
+**IMPORTANT:** Both agents can work concurrently since they read the same inputs (initial-planning docs). Spawn both in a single message using multiple Task() calls.
+
+#### Spawn Both Agents (Parallel)
 ```javascript
+// In a SINGLE message, call Task() twice:
+
 Task({
   description: "PM: Generate PRD from initial planning",
   subagent_type: "general-purpose",
@@ -240,22 +244,20 @@ Create a comprehensive PRD with:
 - Epic breakdown
 - Success metrics
 
-When complete, confirm the PRD is ready for architecture.
+When complete, write a completion message.
 `
 })
-```
 
-#### Spawn Architect Agent
-```javascript
 Task({
-  description: "Architect: Generate architecture from PRD",
+  description: "Architect: Generate architecture from initial planning",
   subagent_type: "general-purpose",
   prompt: `
 You are the Architect agent. Read and embody .system/agents/architect.md.
 
 INPUT:
 - docs/initial-planning/full-idea.md
-- docs/finalized-plan/prd.md
+- docs/initial-planning/scope.md (for technical constraints)
+- docs/initial-planning/manual.md (for infrastructure context)
 
 OUTPUT:
 - docs/finalized-plan/architecture.md
@@ -268,10 +270,16 @@ Create a comprehensive architecture document with:
 - Component breakdown for parallel development
 - Dependency graph
 
-When complete, confirm architecture is ready for execution.
+NOTE: You may complete before PM finishes the PRD. That's fine - you both read from initial-planning/, so no dependency.
+
+When complete, write a completion message.
 `
 })
+
+// Both will run concurrently. Wait for both completion messages before Step 5.
 ```
+
+**Time Savings:** ~10 minutes (agents run in parallel instead of sequential)
 
 ### Step 5: Completion
 
