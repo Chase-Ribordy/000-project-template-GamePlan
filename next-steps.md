@@ -4,28 +4,19 @@
 
 ### What's Done (This Session)
 
-**Execution Pipeline Hardened:**
-- Fixed Playwright MCP integration (correct function names)
-- Made Third Pass fully autonomous (issues → stories → parallel fix agents)
-- Updated all dev agents (first-pass, second-pass, third-pass)
-- SM agent now generates parallel boundaries automatically
-- README rewritten as operator guide
-
-**Mobile Resume Workflow:**
-- Added `/resume` command - pick up from any device
-- Push to GitHub, open Claude Code on web, run `/resume`
+*[To be filled by /handoff command]*
 
 ### What's Next
 
-1. **Test the system** - Run `/orc-exe` with a real project
-2. **Minor cleanup** - Remove stale MCP reference in dev-second-pass.md (line 203)
-3. **Test /refine** - Verify idea pipeline works end-to-end
+1. Run `/refine` to plan your project
+2. Run `/orc-exe` to build it
+3. Use `/handoff` to save progress
 
-### How to Continue (Mobile)
+### How to Continue
 
 ```
-1. Push current changes to GitHub
-2. Open Claude Code on web (phone)
+1. Push to GitHub: git push
+2. Open Claude Code on any device
 3. Run: /resume
 4. Follow the prompts
 ```
@@ -35,44 +26,24 @@
 ## For AI Continuation
 
 ### Current State
-- **Phase**: System architecture complete
-- **Status**: Ready for testing
-- **Branch**: main (uncommitted changes)
+- **Phase**: Template - Not started
+- **Status**: Ready for /refine
+- **Branch**: (to be set)
 
 ### What Changed This Session
 
-**Core Fixes:**
-- `.system/agents/orc-exe.md` - Playwright MCP names fixed, polling loop added, Third Pass refactored to autonomous bulk-fix
-- `.system/agents/dev-first-pass.md` - Playwright MCP names fixed
-- `.system/agents/dev-second-pass.md` - Playwright MCP names fixed, autonomous validation added
-- `.system/agents/dev-third-pass.md` - Playwright MCP names fixed, autonomous batch processing
-- `.system/agents/sm.md` - Parallel boundaries generation, Task() spawning integration
-- `.claude/commands/orc-exe.md` - Prerequisites check strengthened
-
-**New Files:**
-- `docs/sprint-artifacts/.gitkeep` - Directory created
-- `docs/sprint-artifacts/sprint-status-template.yaml` - Sprint tracking template
-- `.system/work-packages/.gitkeep` - Directory created
-- `.system/contracts/story-completion-template.yaml` - Contract template
-- `.claude/commands/resume.md` - Mobile resume command
-
-**Updated:**
-- `README.md` - Complete operator-focused guide
-- `.system/agents/AGENT-SELECTION-GUIDE.md` - BMAD references removed
-- `.system/agents/README.md` - BMAD references removed
+*[Auto-populated by /handoff]*
 
 ### Known Issues
 
-1. **dev-second-pass.md line 203** - References `mcp__component-registry__validate_integration` which doesn't exist. Should be removed.
-
-2. **BMAD cleanup incomplete** - ~20 files in `.system/template/` and `.system/parallel-work/examples/` still have BMAD references (low priority).
+*None - fresh template*
 
 ### Immediate Next Actions
 
-1. Fix stale MCP reference in dev-second-pass.md
-2. Commit all changes: `git add -A && git commit -m "Harden execution pipeline, add /resume"`
-3. Push to GitHub: `git push`
-4. Test `/orc-exe` activation with existing PRD/architecture files
+1. Run `/refine` to begin idea pipeline
+2. Answer discovery questions
+3. Review generated PRD + Architecture
+4. Run `/orc-exe` to begin execution
 
 ### Context Files to Read on Resume
 
@@ -80,19 +51,22 @@ Priority order:
 1. `next-steps.md` (this file) - Current state
 2. `.system/execution-status.yaml` - Phase tracking
 3. `README.md` - Operator workflow overview
-4. `.system/agents/orc-exe.md` - Orchestrator definition
 
 ### Commands to Run
 
 ```bash
-# To continue development
-/resume              # Shows current state, suggests next action
+# Start planning
+/refine
 
-# To test execution pipeline
-/orc-exe             # Requires docs/finalized-plan/prd.md + architecture.md
+# Start building (after planning complete)
+/orc-exe
+*start
 
-# To save and switch devices
-/handoff             # Updates this file, commits, pushes
+# Save progress
+/handoff
+
+# Continue from another device
+/resume
 ```
 
 ### Architecture Summary
@@ -105,19 +79,18 @@ IDEA PIPELINE (/refine)
 
 EXECUTION PIPELINE (/orc-exe)
 ├── Prerequisites: prd.md + architecture.md must exist
-├── Story Generation: SM agent creates stories + parallel-boundaries
-├── First Pass: Skeleton (autonomous, Playwright validates)
-├── Second Pass: Polish (autonomous with live streaming)
-└── Third Pass: Fix (issues → stories → parallel agents)
+├── Story Generation: SM agent creates stories
+├── First Pass: Skeleton (functional, ugly OK)
+├── Second Pass: Polish (beautiful, validated)
+└── Third Pass: Fix (bugs, edge cases)
 
-MOBILE WORKFLOW
+SESSION CONTINUITY
 ├── /handoff → Saves state, pushes to GitHub
 └── /resume → Reads state, continues from any device
 ```
 
 ### Warnings
 
-- **Playwright MCP required** - Check `.mcp.json` includes playwright server
-- **Prerequisites enforced** - /orc-exe will error if PRD/architecture missing
-- **Don't restore BMAD** - System intentionally simplified
-- **Contracts are internal** - Operator never interacts with `.system/contracts/`
+- **Playwright MCP required** - Check `.mcp.json` is configured
+- **Prerequisites enforced** - /orc-exe requires PRD + architecture
+- **Contracts are internal** - Operator never edits `.system/contracts/`
