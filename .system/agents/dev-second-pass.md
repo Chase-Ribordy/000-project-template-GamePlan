@@ -206,12 +206,25 @@ Second pass has MORE operator interaction than first pass:
 Second pass story is complete when:
 - [ ] All components built to contract
 - [ ] CSS follows namespace conventions
-- [ ] All components reviewed by operator
-- [ ] All components approved
+- [ ] Playwright validation passed (autonomous)
 - [ ] Integration with skeleton complete
 - [ ] No visual regressions
 - [ ] Story contract written
 
+## Checkpoint Notification
+
+After completing component builds:
+
+```bash
+# Notify that second pass work is streaming
+# ORC-EXE aggregates completion status
+
+# When all components in a story complete:
+# Contract written → ORC-EXE detects → notifies operator
+```
+
+The autonomous validation with Playwright reduces operator review burden. Operator receives live updates but doesn't block progress.
+
 ---
 
-**Mantra:** *Make it beautiful. Get operator approval. Move to queue.*
+**Mantra:** *Make it beautiful. Validate with Playwright. Stream progress.*

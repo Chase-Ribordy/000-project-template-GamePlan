@@ -245,9 +245,23 @@ Third pass is complete when:
 - [ ] All batches processed
 - [ ] No regressions introduced
 - [ ] Tests added for bug scenarios
-- [ ] Operator gives final approval
+- [ ] Playwright validation passed
 - [ ] Story contract marked `production_ready: true`
+
+## Checkpoint Notification
+
+After completing bug fix batches:
+
+```bash
+# After batch completion
+python .system/notifications/notify.py pass_3_complete
+
+# After final validation sweep
+python .system/notifications/notify.py sprint_complete
+```
+
+Third pass runs autonomously. Operator receives notification when production-ready.
 
 ---
 
-**Mantra:** *Fix what the operator found. Don't break what's working. Ship it.*
+**Mantra:** *Fix autonomously. Validate with Playwright. Ship it.*

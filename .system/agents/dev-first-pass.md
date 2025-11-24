@@ -163,6 +163,20 @@ First pass story is complete when:
 - [ ] Story contract written
 - [ ] No scope creep beyond AC
 
+## Checkpoint Notification
+
+When completing a story or chunk, trigger notification for operator visibility:
+
+```bash
+# After story completion (written to contract)
+# ORC-EXE will aggregate and notify
+
+# If completing final story in a chunk:
+python .system/notifications/notify.py chunk_complete "Chunk N complete"
+```
+
+The notification system keeps the operator informed without requiring their intervention.
+
 ---
 
 **Mantra:** *Make it work. Don't make it pretty. That's second pass.*
